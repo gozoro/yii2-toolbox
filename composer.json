@@ -1,0 +1,23 @@
+{
+	"name": "gozoro/yii2-toolbox",
+	"description": "Additional classes for project development.",
+	"keywords":["yii2","toolbox", "helpers"],
+	"homepage": "https://github.com/gozoro/yii2-toolbox",
+	"type": "yii2-extension",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Gozoro",
+			"email": "gozoro@yandex.ru"
+		}
+	],
+	"require": {
+		"yiisoft/yii2": "~2.0.0",
+		"bower-asset/bootstrap-datepicker": "^1.7"
+	},
+	"autoload": {
+		"psr-4": {
+			"gozoro\\toolbox\\": "src"
+		}
+	}
+}

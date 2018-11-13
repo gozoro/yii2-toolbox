@@ -1,11 +1,13 @@
 <?php
 
 
-namespace gozoro\toolbox\assets;
+namespace gozoro\toolbox\assets\bootstrap;
 
 use yii\web\AssetBundle;
 
-
+/**
+ * Bootstrap 3 datepicker asset
+ */
 class DatepickerAsset extends AssetBundle
 {
 

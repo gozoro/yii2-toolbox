@@ -1,15 +1,17 @@
 <?php
 
 
-namespace gozoro\toolbox\assets;
+namespace gozoro\toolbox\assets\bootstrap;
 
 use yii\web\AssetBundle;
 
-
+/**
+ * Bootstrap 3 button upload asset
+ */
 class ButtonUploadAsset extends AssetBundle
 {
 
-	public $sourcePath = '@vendor/gozoro/yii2-toolbox/src/resources';
+	public $sourcePath = '@vendor/gozoro/yii2-toolbox/src/resources/bootstrap/button.upload';
 
 	public $js = [
 		'js/button.upload.min.js',

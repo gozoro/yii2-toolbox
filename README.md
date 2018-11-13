@@ -1,2 +1,2 @@
 # yii2-toolbox
-Additional classes for project development
+Collection classes and helpers for yii2 project.

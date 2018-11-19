@@ -1,7 +1,7 @@
 <?php
 
 
-namespace gozoro\toolbox\helpers;
+namespace gozoro\toolbox\helpers\html;
 
 use Yii;
 use gozoro\toolbox\helpers\html\Html;

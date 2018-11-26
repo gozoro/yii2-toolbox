@@ -20,7 +20,7 @@ class Bootstrap extends Html
      * can be obtained via $_FILES[$name] (see PHP documentation).
 	 *
 	 * @param string $name the name attribute.
-	 * @param type $label button label. Default "Upload".
+	 * @param string $label button label. Default "Upload".
 	 * @param array $options the tag options in terms of name-value pairs. These will be rendered as
      * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
 	 * @return string the generated file input tag

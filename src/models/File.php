@@ -185,10 +185,9 @@ abstract class File extends \yii\db\ActiveRecord
 
 		if(!file_exists($filestore))
 		{
-			return mkdir($filestore, 0775, true);
+			mkdir($filestore, 0775, true);
 		}
-		else
-			return false;
+		return true;
 	}
 
 

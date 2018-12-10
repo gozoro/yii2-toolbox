@@ -115,18 +115,28 @@ abstract class File extends \yii\db\ActiveRecord
 	}
 
 	/**
-	 * Places the uploaded file to filestore.
-	 * @param \yii\web\UploadedFile $uploadFile
+	 * @see moveToFilestore()
+	 * @param \yii\web\UploadedFile $uploadedFile
+	 * @deprecated since version v0.0.6
+	 */
+	static public function toFilestore(\yii\web\UploadedFile $uploadedFile)
+	{
+		return self::saveFile($uploadedFile);
+	}
+
+	/**
+	 * Moves the uploaded file to file storage and inserts a record in the database.
+	 * @param \yii\web\UploadedFile $uploadedFile
 	 * @return \static
 	 * @throws \yii\base\Exception
 	 */
-	static public function toFilestore(\yii\web\UploadedFile $uploadFile)
+	static public function saveFile(\yii\web\UploadedFile $uploadedFile)
 	{
 		$file = new static();
-		$file->name = $uploadFile->name;
+		$file->name = $uploadedFile->name;
 		$file->hash = Yii::$app->security->generateRandomString(32);
-		$file->size = $uploadFile->size;
-		$file->mime = $uploadFile->type;
+		$file->size = $uploadedFile->size;
+		$file->mime = $uploadedFile->type;
 		$file->uploadDate = date('Y-m-d H:i:s');
 
 		$filestore = $file->getFilestore();
@@ -140,7 +150,7 @@ abstract class File extends \yii\db\ActiveRecord
 				{
 					if($file->save())
 					{
-						if($uploadFile->saveAs($file->getPath()))
+						if($uploadedFile->saveAs($file->getPath()))
 						{
 							$file->afterFilestore();
 							return $file;
@@ -171,7 +181,14 @@ abstract class File extends \yii\db\ActiveRecord
 
 	public function beforeFilestore()
 	{
-		return true;
+		$filestore = $this->getFilestore();
+
+		if(!file_exists($filestore))
+		{
+			return mkdir($filestore, 0775, true);
+		}
+		else
+			return false;
 	}
 
 

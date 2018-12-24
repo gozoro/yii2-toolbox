@@ -12,8 +12,14 @@
 		}
 	],
 	"require": {
+		"php": ">=5.5.9",
 		"yiisoft/yii2": "~2.0.0",
-		"bower-asset/bootstrap-datepicker": "^1.7"
+		"bower-asset/bootstrap-datepicker": "^1.7",
+		"bower-asset/jquery": "~1.12",
+		"gozoro/yii2-image": "~0.0.1",
+		"gozoro/jquery-ajaxform": "~0.0.1",
+		"gozoro/bootstrap-sidebar": "~0.0.1",
+		"gozoro/bootstrap3-plus": "~0.0.1"
 	},
 	"autoload": {
 		"psr-4": {

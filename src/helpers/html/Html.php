@@ -85,4 +85,85 @@ class Html extends \yii\helpers\Html
 	{
 		return self::hiddenInput(\Yii::$app->getRequest()->csrfParam, \Yii::$app->getRequest()->getCsrfToken(), []);
 	}
+
+	/**
+	 * Returns string with video tag or youtube-iframe.
+	 *
+	 * @param string $path path to video file or youtube-url
+	 * @param array $options ['id', 'title', 'poster', 'width'].<br />
+	 *
+	 * id - the unique identifier of the tag. Default used function uniqid('video_').<br />
+	 * title - text over video.<br />
+	 * poster - poster image path.<br />
+	 * width - width (default 400px).<br />
+	 *
+	 * @return string
+	 */
+	static public function video($path, $options=[])
+	{
+		if(isset($options['id']))
+			$id = $options['id'];
+		else
+			$id = uniqid('video_');
+
+
+		if(isset($options['title']))
+			$title = $options['title'];
+		else
+			$title = '';
+
+		if(isset($options['poster']))
+			$poster = $options['poster'];
+		else
+			$poster = '';
+
+		if(isset($options['width']))
+			$width = $options['width'];
+		else
+			$width = '400px';
+
+
+
+
+		$parsed = parse_url($path);
+
+		if(isset($parsed['host']) and preg_match('/youtube\.com/', $parsed['host']))
+		{
+
+			$html = '<iframe id="youtube_iframe_'.$id.'" style="width:100%; max-width:'.$width.';" src="'.$path.'" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+
+				. '<script>'
+				. 'function youtube_resizer_'.$id.'(){'
+				. 'var iframe = $("#youtube_iframe_'.$id.'");'
+				. 'var width=iframe.width();'
+				. 'var height = width/1.618;'
+				. 'iframe.css("height", height);'
+				. '}'
+				. '$(window).resize(youtube_resizer_'.$id.'); '
+				. '$(document).ready(youtube_resizer_'.$id.'); '
+				. '</script>';
+
+		}
+		else
+		{
+
+			$html = ''
+				. '<div style="max-width:'.$width.'; position: relative;">'
+				. '<div id="'.$id.'_title" style="position: absolute; top:10px; left:10px; color:white;font-size: 12px;">'
+				.  static::encode($title)
+				. '</div>'
+
+				. '<video id="'.$id.'" controls style="width:100%; object-fit:cover;" '.(($poster)?'poster="'.$poster.'"':'').'>'
+				. '<source src="'.$path.'">'
+				. '</video>'
+				. '</div>'
+
+				. '<script>'
+				. '$("#'.$id.'").on("play", function(){$("#'.$id.'_title").hide();});'
+				. '$("#'.$id.'").on("pause", function(){$("#'.$id.'_title").show();});'
+				. '</script>';
+		}
+
+		return $html;
+	}
 }

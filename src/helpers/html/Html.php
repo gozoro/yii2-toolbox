@@ -88,15 +88,12 @@ class Html extends \yii\helpers\Html
 
 	/**
 	 * Returns string with video tag or youtube-iframe.
-	 *
 	 * @param string $path path to video file or youtube-url
 	 * @param array $options ['id', 'title', 'poster', 'width'].<br />
-	 *
-	 * id - the unique identifier of the tag. Default used function uniqid('video_').<br />
-	 * title - text over video.<br />
-	 * poster - poster image path.<br />
-	 * width - width (default 400px).<br />
-	 *
+	 * id - the unique identifier of the tag<br />
+	 * title - text over video <br />
+	 * poster - poster image path<br />
+	 * width - width (default 400px)<br />
 	 * @return string
 	 */
 	static public function video($path, $options=[])
@@ -118,10 +115,38 @@ class Html extends \yii\helpers\Html
 			$poster = '';
 
 		if(isset($options['width']))
-			$width = $options['width'];
+		{
+			if(is_string($options['width']))
+			{
+				$width = $options['width'];
+			}
+			else
+			{
+				$width = (int)$options['width'];
+				$width .= 'px';
+			}
+		}
 		else
+		{
 			$width = '400px';
+		}
 
+		if(isset($options['height']))
+		{
+			if(is_string($options['height']))
+			{
+				$height = $options['height'];
+			}
+			else
+			{
+				$height = (int)$options['height'];
+				$height .= 'px';
+			}
+		}
+		else
+		{
+			$height = 'auto';
+		}
 
 
 
@@ -129,10 +154,21 @@ class Html extends \yii\helpers\Html
 
 		if(isset($parsed['host']) and preg_match('/youtube\.com/', $parsed['host']))
 		{
+			if($height !== 'auto')
+			{
+				$height_style = "height:".$height.";";
+			}
+			else
+			{
+				$height_style = "";
+			}
 
-			$html = '<iframe id="youtube_iframe_'.$id.'" style="width:100%; max-width:'.$width.';" src="'.$path.'" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+			$html = '<iframe id="youtube_iframe_'.$id.'" style="width:100%; max-width:'.$width.'; '.$height_style.'" src="'.$path.'" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
 
-				. '<script>'
+			if($height == 'auto')
+			{
+
+			$html.= '<script>'
 				. 'function youtube_resizer_'.$id.'(){'
 				. 'var iframe = $("#youtube_iframe_'.$id.'");'
 				. 'var width=iframe.width();'
@@ -142,7 +178,7 @@ class Html extends \yii\helpers\Html
 				. '$(window).resize(youtube_resizer_'.$id.'); '
 				. '$(document).ready(youtube_resizer_'.$id.'); '
 				. '</script>';
-
+			}
 		}
 		else
 		{
@@ -153,7 +189,7 @@ class Html extends \yii\helpers\Html
 				.  static::encode($title)
 				. '</div>'
 
-				. '<video id="'.$id.'" controls style="width:100%; object-fit:cover;" '.(($poster)?'poster="'.$poster.'"':'').'>'
+				. '<video id="'.$id.'" controls style="width:100%; height:'.$height.'; object-fit:cover;" '.(($poster)?'poster="'.$poster.'"':'').'>'
 				. '<source src="'.$path.'">'
 				. '</video>'
 				. '</div>'

@@ -120,11 +120,20 @@ class Bootstrap extends Html
 					throw new \yii\base\Exception("Wrong value datepicker.");
 			}
 
+			if(isset($options['placeholder']))
+				$placeholder = 'placeholder="'.self::encode($options['placeholder']).'"';
+			else
+				$placeholder = '';
 
+
+			if(isset($options['class']))
+				$class = $options['class'];
+			else
+				$class = '';
 
 			$html = '
 					 <div class="input-group date"  >
-						<input type="text" class="form-control" id="'.$id.'" name="'.$name.'" value="'.$value.'" maxlength="10"/>
+						<input type="text" class="form-control '.$class.'" id="'.$id.'" name="'.$name.'" value="'.$value.'" maxlength="10" '.$placeholder.' />
 						<span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
 					 </div>
 

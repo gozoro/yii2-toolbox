@@ -2,7 +2,7 @@
 
 
 
-namespace app\commands;
+namespace gozoro\toolbox\commands;
 
 use Yii;
 use yii\console\Controller;

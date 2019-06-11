@@ -6,20 +6,18 @@ namespace gozoro\toolbox\assets\bootstrap;
 use yii\web\AssetBundle;
 
 /**
- * Includes gozoro/bootstrap-sidebar styles and scripts
+ * Includes gozoro/bootstrap3-plus styles and scripts
  */
-class SidebarAsset extends AssetBundle
+class BootstrapPlusAsset extends AssetBundle
 {
 
-    public $sourcePath = '@vendor/gozoro/bootstrap-sidebar/dist';
+    public $sourcePath = '@vendor/gozoro/bootstrap3-plus/dist';
 
 	public $css = [
-        'css/bootstrap-sidebar.min.css',
+        'css/bootstrap3-plus.min.css',
     ];
 
-    public $js = [
-		'js/bootstrap-sidebar.min.js',
-    ];
+    public $js = [];
 
 	public $jsOptions = ['position'=>\yii\web\view::POS_HEAD];
 

@@ -14,7 +14,7 @@ class SidebarAsset extends AssetBundle
     public $sourcePath = '@vendor/gozoro/bootstrap-sidebar/dist';
 
 	public $css = [
-        'css/bootstrap-sidebar.css',
+        'css/bootstrap-sidebar.min.css',
     ];
 
     public $js = [

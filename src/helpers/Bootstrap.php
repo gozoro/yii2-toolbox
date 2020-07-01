@@ -114,10 +114,7 @@ class Bootstrap extends Html
 
 			if(is_array($value))
 			{
-				if(isset($value[0]))
-					$value = $value[0];
-				else
-					throw new \yii\base\Exception("Wrong value datepicker.");
+					throw new \yii\base\Exception("Invalid value datepicker. Value must be string.");
 			}
 
 			if(isset($options['placeholder']))
@@ -152,9 +149,9 @@ class Bootstrap extends Html
 
 			if(is_array($value))
 			{
-				if( !( isset($value[0]) and isset($value[1]) ) )
+				if(!array_key_exists(0, $value) or ! array_key_exists(1, $value))
 				{
-					throw new \yii\base\Exception("Wrong value datepicker.");
+					throw new \yii\base\Exception("Invalid value datepicker. Value must be array with 2 items.");
 				}
 			}
 			else
@@ -170,20 +167,16 @@ class Bootstrap extends Html
 						<input type="text" class="input-sm form-control" id="'.$id[1].'" name="'.$name[1].'" value="'.$value[1].'" />
 					</div>
 					<script>
-
 						$(document).ready(function()
 						{
 							$("#'.$id[0].'").parent().datepicker({ '.implode(',', $arOptions ).' });
 						});
-
 					</script>
 				';
-
-
 		}
 		else
 		{
-			throw new \yii\base\Exception("Wrong name datepicker.");
+			throw new \yii\base\Exception("Invalid name datepicker. Name must be string or array with 2 items.");
 		}
 
 		return $html;

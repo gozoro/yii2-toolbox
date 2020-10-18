@@ -7,56 +7,106 @@ namespace gozoro\toolbox\commands;
 use Yii;
 use yii\console\Controller;
 use yii\console\ExitCode;
-
-
 use yii\web\IdentityInterface;
 
 /**
- * Console commands for RBAC management
+ *
+ * RBAC configuration and managment tool in the console.
+ *
+  * Example RBAC config:<br />
+ *
+ * [<br />
+ *    'permissions' =>[<br />
+ *        'read' => 'permissions for read something',   // name => description<br />
+ *        'write' => 'permissions for write something', // name => description<br />
+ *    ],<br />
+ *
+ *    'roles' => [<br />
+ *        'role_admin' => 'Administrator role', // name => description<br />
+ *        'role_manager' => 'Manager role',     // name => description<br />
+ *    ],<br />
+ *
+ *    'rules' => [<br />
+ *        'role_admin' => '/./',      // regexp pattern for all permissions<br />
+ *        'role_manager' => ['read'], // array of permissions<br />
+ *    ],<br />
+ * ]<br />
  *
  */
 abstract class RbacController extends Controller
 {
-    public $defaultAction = 'show';
+	public $defaultAction = 'show';
 
 
 	/**
-	 * Returns rbac manager interface
-	 * @return \yii\rbac\ManagerInterface
-	 */
-	protected static function authManager()
-	{
-		return Yii::$app->authManager;
-	}
-
-
-	/**
-	 * Must return array of permissions (key is permission name, value is permission description).
-	 * @return array
-	 */
-	abstract protected function permissionConfig();
-
-
-	/**
-	 * Must return array of roles
-	 * (index 0 - role name, index 1 - array of permission name)
-	 * @return array
-	 */
-	abstract protected function roleConfig();
-
-
-	/**
-	 * Must return identity object by login
+	 * Must return identity object by username
+	 * @param string $username
 	 * @return IdentityInterface
 	 */
-	abstract public function findIdentityByLogin($login);
+	abstract public function findIdentityByUsername($username);
 
 	/**
 	 * Must return identity object by ID
+	 * @param int|string $userId
+	 * @return IdentityInterface
 	 */
 	abstract public function findIdentityById($userId);
 
 
+	/**
+	 * Returns rbac manager
+	 * @return \yii\rbac\ManagerInterface
+	 */
+	public function getAuthManager()
+	{
+		return Yii::$app->authManager;
+	}
+
+	/**
+	 * Returns path to RBAC-config
+	 * @return string
+	 */
+	public function getConfigPath()
+	{
+		return '@app/config/rbac.php';
+	}
+
+
+	/**
+	 * Returns config array
+	 * @return array
+	 * @throws \yii\console\Exception
+	 */
+	public function getConfig()
+	{
+		$path = $this->getConfigPath();
+		$configfile = Yii::getAlias($path);
+
+		if(file_exists($configfile))
+		{
+			return require($configfile);
+		}
+		else
+		{
+			throw new \yii\console\Exception("RBAC config $configfile is not exist.");
+		}
+	}
+
+
+	/**
+	 * Displays config
+	 */
+	public function actionShowConfig()
+	{
+		$config = $this->getConfig();
+
+		print "RBAC config:\n\n";
+
+		print_r($config);
+
+		print "\n\n";
+		return ExitCode::OK;
+	}
 
 
 	/**
@@ -64,295 +114,176 @@ abstract class RbacController extends Controller
 	 * adds default roles that are specified in the method, restores the ownership of roles to users).
 	 * You can use it after adding new roles to the method, or removing an unnecessary role.
 	 */
-	public function actionConfigure()
+	public function actionInit()
 	{
-		print "\n";
+		$config      = $this->getConfig();
+		$authManager = $this->getAuthManager();
+		$userRoles   = [];
 
-		$auth = static::authManager();
-
-
-		print "Get user roles\n";
-		$roles = $auth->getRoles();
-		$appRoles = [];
-		foreach($roles as $role)
+		if(isset($config['permissions']) and is_array($config['permissions']))
 		{
-			$appRoles[ $role->name ] = $auth->getUserIdsByRole($role->name);
+			$permissionConfig = [];
+			foreach($config['permissions'] as $key => $val)
+			{
+				if(!is_string($key) or !is_string($val))
+					throw new \yii\console\Exception("The permission names must be string (permissions[$key] => $val).");
+
+				$permissionConfig[$key] = $val;
+			}
 		}
-		print "Remove all permissions\n";
-		$auth->removeAll();
+		else
+			throw new \yii\console\Exception("The [permissions] is missing in the RBAC config.");
+
+		if(isset($config['roles']) and is_array($config['roles']))
+		{
+			$roleConfig = [];
+			foreach($config['roles'] as $key => $val)
+			{
+				if(!is_string($key) or !is_string($val))
+					throw new \yii\console\Exception("The role names must be string (roles[$key] => $val).");
+
+				$roleConfig[$key] = $val;
+			}
+		}
+		else
+			throw new \yii\console\Exception("The [roles] is missing in the RBAC config.");
+
+		if(isset($config['rules']) and is_array($config['rules']))
+		{
+			$ruleConfig = [];
+			foreach($config['rules'] as $key => $val)
+			{
+				if(!is_string($key))
+					throw new \yii\console\Exception("The rule key must be string.");
+
+				if(!is_string($val) and !is_array($val))
+					throw new \yii\console\Exception("The rule value must be string (as pattern of permission names) or not associative array permission names.");
+
+				if(is_array($val) and ArrayHelper::isAssociative($val))
+				{
+					throw new \yii\console\Exception("The rule value must be not associative array");
+				}
+
+				$ruleConfig[$key] = $val;
+			}
+		}
+		else
+			throw new \yii\console\Exception("The [rules] is missing in the RBAC config.");
+
+
+
+
+		print "Get user roles: ";
+		foreach($authManager->getRoles() as $role)
+		{
+			$userRoles[ $role->name ] = $authManager->getUserIdsByRole($role->name);
+		}
+		print "OK\n";
+
+
+
+		print "Clear RBAC data: ";
+		$authManager->removeAll();
+		print "OK\n";
 
 		print "Configure permissions:\n";
-
 		$permisions = [];
-		foreach($this->permissionConfig() as $permissionName => $permissionDescription)
+		foreach($permissionConfig as $permissionName => $permissionDescription)
 		{
-			$permisions[$permissionName] = $auth->createPermission($permissionName);
+			$permisions[$permissionName] = $authManager->createPermission($permissionName);
 			$permisions[$permissionName]->description = $permissionDescription;
-			$auth->add($permisions[$permissionName]);
-			print " - add $permissionName\n";
+			$authManager->add($permisions[$permissionName]);
+			print " + $permissionName ($permissionDescription)\n";
 		}
+
 
 		print "Configure roles:\n";
-
-		foreach($this->roleConfig() as $roleName => $roleConfig)
+		$roles = [];
+		foreach($roleConfig as $roleName => $roleDescription)
 		{
-			$role = $auth->createRole($roleName);
-			if(isset($roleConfig[0]))
-			{
-				$role->description = $roleConfig[0];
-			}
-			$auth->add($role);
-			print " - add role $roleName\n";
+			$roles[$roleName] = $authManager->createRole($roleName);
+			$roles[$roleName]->description = $roleDescription;
+			$authManager->add($roles[$roleName]);
+			print " + $roleName ($roleDescription)\n";
+		}
 
-			if(isset($roleConfig[1]) and is_array($roleConfig[1]))
+		print "Configure rules:\n";
+		foreach($ruleConfig as $roleName => $rule)
+		{
+			if(isset($roles[$roleName]))
 			{
-				foreach($roleConfig[1] as $permissionName)
+				$role = $roles[$roleName];
+				print " Role $roleName:\n";
+
+				if(is_string($rule))
 				{
-					if(isset($permisions[$permissionName]))
+					$pattern = $rule;
+					foreach($permisions as $permissionName => $permission)
 					{
-						$auth->addChild($role, $permisions[$permissionName]);
+						if(preg_match($pattern, $permissionName))
+						{
+							$authManager->addChild($role, $permission);
+							print " + permission [$permissionName]\n";
+
+						}
 					}
 				}
+				elseif(is_array($rule))
+				{
+					foreach($rule as $itemName)
+					{
+						if(isset($permisions[$itemName]))
+						{
+							$authManager->addChild($role, $permisions[$itemName]);
+							print " + permission [$itemName]\n";
+						}
+						elseif(isset($roles[$itemName]))
+						{
+							if($roleName == $itemName)
+							{
+								print " - error: the rule [$roleName] can't be linked to itself.\n";
+							}
+							else
+							{
+								$authManager->addChild($role, $roles[$itemName]);
+								print " + role [$itemName]\n";
+							}
+						}
+						else
+						{
+							print " - error: the rule [$roleName] can't be linked to item [$itemName].\n";
+						}
+					}
+				}
+				else
+				{
+					print " - error: the rule [$roleName] in not valid.\n";
+				}
+			}
+			else
+			{
+				print " - error: the rule [$roleName] doesn't match any roles.\n";
 			}
 		}
 
-		print "Configure: assign roles to users\n";
-		foreach($appRoles as $roleName => $userIds)
+
+		print "Configure users: ";
+		foreach($userRoles as $roleName => $userIds)
 		{
+			$role = $authManager->getRole($roleName);
+
+			if(!is_null($role))
 			foreach($userIds as $userId)
 			{
-				$role = $auth->getRole($roleName);
-
-				if(!is_null($role))
-				{
-					$auth->assign($role, $userId);
-				}
+				$authManager->assign($role, $userId);
 			}
 		}
-
-		print "\n";
-
-		return ExitCode::OK;
-	}
+		print "OK\n";
 
 
-	/**
-	 * Binds a role to a user.
-	 * @param string $userLogin login of user
-	 * @param string $rolename name of role
-	 */
-	public function actionAssign($rolename, $userLogin)
-	{
-		print "\n";
-		$auth = static::authManager();
-		$role = $auth->getRole($rolename);
-
-		if(is_null($role))
-		{
-			print "Role [$rolename] is not found.\n\n";
-			return \yii\console\ExitCode::DATAERR;
-		}
-
-		$user = $this->findIdentityByLogin($userLogin);
-
-		if(is_null($user))
-		{
-			print "User [$userLogin] is not found.\n\n";
-			return ExitCode::DATAERR;
-		}
-		$userId = $user->getId();
-
-
-		$roleUsers = $auth->getUserIdsByRole($rolename);
-
-		if(in_array($userId, $roleUsers))
-		{
-			print "User [$userLogin] already has a role [$rolename].\n\n";
-			return ExitCode::DATAERR;
-		}
-		else
-		{
-			if($auth->assign($role, $userId))
-			{
-				print "User [$userLogin] assign to role [$rolename].\n\n";
-			}
-		}
-		return ExitCode::OK;
-	}
-
-	/**
-	 * Removes the binding of the role to the user
-	 * @param string $rolename
-	 * @param string $userLogin
-	 */
-	public function actionUnassign($rolename, $userLogin)
-	{
-		print "\n";
-
-
-		$identity = $this->findIdentityByLogin($userLogin);
-
-		if(is_null($identity))
-		{
-			print "User [$userLogin] is not found.\n\n";
-			return ExitCode::DATAERR;
-		}
-
-		$userId = $identity->getId();
-
-		$auth = static::authManager();
-		$role = $auth->getRole($rolename);
-
-		if(is_null($role))
-		{
-			print "Role [$rolename] is not found.\n\n";
-			return ExitCode::DATAERR;
-		}
-
-		if($auth->revoke($role, $userId))
-		{
-			print "Revoked [$rolename] from user [$userLogin].\n";
-		}
-		else
-		{
-			print "The user [$userLogin] is not binded with the role [$rolename].\n";
-		}
 
 		print "\n";
 		return ExitCode::OK;
-	}
-
-
-	/**
-	 * Removes the bindings of all the roles to the user
-	 * @param string $userLogin
-	 */
-	public function actionUnassignAll($userLogin)
-	{
-		print "\n";
-
-		$identity = $this->findIdentityByLogin($userLogin);
-
-		if(is_null($identity))
-		{
-			print "User [$userLogin] is not found.\n\n";
-			return ExitCode::DATAERR;
-		}
-
-		$userId = $identity->getId();
-
-		$auth = static::authManager();
-
-		if($auth->revokeAll($userId))
-		{
-			print "Revoked all roles from user [$userLogin].\n";
-		}
-		else
-		{
-			print "Unfound association with user [$userLogin].\n";
-		}
-
-		print "\n";
-		return ExitCode::OK;
-	}
-
-
-	/**
-	 * Displays a list of roles in this application.
-	 */
-	public function actionRoles()
-	{
-		$auth = static::authManager();
-		$roles = $auth->getRoles();
-
-		print "\nRoles:\n";
-
-		if(empty($roles))
-		{
-			print "empty\n";
-		}
-		else
-		{
-			foreach($roles as $role)
-			{
-				print $role->name."\t";
-
-				if(!empty($role->description))
-				{
-					print $role->description;
-				}
-				print "\n";
-			}
-		}
-
-		print "\n";
-
-		return ExitCode::OK;
-	}
-
-
-	/**
-	 * Role users list
-	 * @param string $rolename
-	 */
-	public function actionRoleUsers($rolename)
-	{
-		print "\n";
-
-		$auth = static::authManager();
-		$role = $auth->getRole($rolename);
-
-		if(is_null($role))
-		{
-			print "Role [$rolename] is not found.\n\n";
-			return ExitCode::DATAERR;
-		}
-
-		$usersIds = $auth->getUserIdsByRole($rolename);
-
-		print "\nUsers of role [$rolename]:\n";
-
-		if(empty($usersIds))
-		{
-			print "...no users\n";
-		}
-		else
-		{
-			foreach($usersIds as $userId)
-			{
-				$user = $this->findIdentityById($userId);
-
-				if($user)
-				{
-					if(method_exists($user, 'toArray'))
-					{
-						$userArr = $user->toArray();
-						print " - ".implode("\t", $userArr)."\n";
-					}
-					else
-					{
-						print " - ".$user->getId()." (add a method ".get_class($user)."::toArray() for more information)\n";
-					}
-				}
-			}
-		}
-
-		print "\n";
-		return ExitCode::OK;
-	}
-
-	/**
-	 * Displays permission config and role config
-	 */
-	public function actionShowConfig()
-	{
-		print "\n";
-		print "Permission config:\n";
-		print_r($this->permissionConfig());
-		print "\n";
-		print "Role config:\n";
-		print_r($this->roleConfig());
-		print "\n";
 	}
 
 
@@ -361,17 +292,15 @@ abstract class RbacController extends Controller
 	 */
 	public function actionShow()
 	{
-		print "\n";
-
-		$auth = static::authManager();
-		$roles = $auth->getRoles();
+		$authManager = $this->getAuthManager();
+		$roles       = $authManager->getRoles();
 
 
 		if($roles) foreach($roles as $role)
 		{
 			print $role->name." (".$role->description.")\n";
 
-			$roleUsers = $auth->getUserIdsByRole($role->name);
+			$roleUsers = $authManager->getUserIdsByRole($role->name);
 
 			if($roleUsers) foreach($roleUsers as $userId)
 			{
@@ -404,6 +333,267 @@ abstract class RbacController extends Controller
 
 		print "\n";
 
+		return ExitCode::OK;
+	}
+
+
+	/**
+	 * Assigns a role (or a permission) to a user.
+	 * @param string $rolename role name or permission name
+	 * @param string $username user name
+	 */
+	public function actionAssign($rolename, $username)
+	{
+		print "\n";
+		$authManager = $this->getAuthManager();
+		$perm        = $authManager->getPermission($rolename);
+		$role        = $authManager->getRole($rolename);
+		$obj         = [];
+
+		if($perm)
+		{
+			$type = 'permission';
+			$item = $perm;
+		}
+
+		if($role)
+		{
+			$type = 'role';
+			$item = $role;
+		}
+
+		if(empty($item))
+		{
+				print "Role [$rolename] is not found.\n\n";
+				print "Permission [$rolename] is not found.\n\n";
+				return \yii\console\ExitCode::DATAERR;
+		}
+
+
+		$identity = $this->findIdentityByUsername($username);
+
+		if(is_null($identity))
+		{
+			print "User [$username] is not found.\n\n";
+			return ExitCode::DATAERR;
+		}
+
+		$userId = $identity->getId();
+
+
+		if($type == 'role')
+		{
+			$userRoles = $authManager->getRolesByUser($userId);
+			if(isset($userRoles[$rolename]))
+			{
+				print "User [$username] already has a role [$rolename].\n\n";
+				return ExitCode::DATAERR;
+			}
+		}
+		else
+		{
+			$userPermissions = $authManager->getPermissionsByUser($userId);
+			if(isset($userPermissions[$rolename]))
+			{
+				print "User [$username] already has a permission [$rolename].\n\n";
+				return ExitCode::DATAERR;
+			}
+		}
+
+
+
+		if($authManager->assign($item, $userId))
+		{
+			print "The user [$username] was successfully assigned to the $type [$rolename].\n\n";
+			return ExitCode::OK;
+		}
+		else
+		{
+			print "The $type failed assigned.\n";
+			return ExitCode::UNSPECIFIED_ERROR;
+		}
+
+		return ExitCode::OK;
+	}
+
+
+	/**
+	 * Revokes role or permission from a user
+	 * @param string $rolename role name or permission name
+	 * @param string $username
+	 */
+	public function actionUnassign($rolename, $username)
+	{
+		print "\n";
+
+		$authManager = $this->getAuthManager();
+		$perm        = $authManager->getPermission($rolename);
+		$role        = $authManager->getRole($rolename);
+		$item        = null;
+		$type        = null;
+
+		if($perm)
+		{
+			$type = 'permission';
+			$item = $perm;
+		}
+
+		if($role)
+		{
+			$type = 'role';
+			$item = $role;
+		}
+
+		if(empty($item))
+		{
+				print "Role [$rolename] is not found.\n\n";
+				print "Permission [$rolename] is not found.\n\n";
+				return \yii\console\ExitCode::DATAERR;
+		}
+
+
+		$identity = $this->findIdentityByUsername($username);
+
+		if(is_null($identity))
+		{
+			print "User [$username] is not found.\n\n";
+			return ExitCode::DATAERR;
+		}
+
+		$userId = $identity->getId();
+
+
+		if($auth->revoke($item, $userId))
+		{
+			print "The $type [$rolename] successfully revoked from user [$username].\n";
+			return ExitCode::OK;
+		}
+		else
+		{
+			print "The $type failed revoked.\n";
+			return ExitCode::UNSPECIFIED_ERROR;
+		}
+	}
+
+
+	/**
+	 * Revokes all roles from a user
+	 * @param string $username
+	 */
+	public function actionUnassignAll($username)
+	{
+		$authManager = $this->getAuthManager();
+		$identity    = $this->findIdentityByUsername($username);
+
+		if(is_null($identity))
+		{
+			print "User [$username] is not found.\n\n";
+			return ExitCode::DATAERR;
+		}
+
+		$userId = $identity->getId();
+
+		if($authManager->revokeAll($userId))
+		{
+			print "Revoked all roles from user [$username].\n";
+		}
+		else
+		{
+			print "Failed revoke from [$username].\n";
+		}
+
+		print "\n";
+		return ExitCode::OK;
+	}
+
+
+	/**
+	 * Displays a list of roles in this application
+	 */
+	public function actionRoles()
+	{
+		$authManager = $this->getAuthManager();
+		$roles = $authManager->getRoles();
+
+		print "Roles:\n";
+
+		if(empty($roles))
+		{
+			print "...empty\n";
+		}
+		else
+		{
+			foreach($roles as $role)
+			{
+				print $role->name;
+
+				if(!empty($role->description))
+				{
+					print "\t".$role->description;
+				}
+				print "\n";
+			}
+		}
+
+		print "\n";
+
+		return ExitCode::OK;
+	}
+
+
+	/**
+	 * Displays roles and permissions of user
+	 * @param string $username
+	 */
+	public function actionShowUser($username)
+	{
+		$authManager = $this->getAuthManager();
+		$identity    = $this->findIdentityByUsername($username);
+
+		if(is_null($identity))
+		{
+			print "User [$username] is not found.\n\n";
+			return ExitCode::DATAERR;
+		}
+
+		$userId = $identity->getId();
+
+		$roles = $authManager->getRolesByUser($userId);
+		$permissions = $authManager->getPermissionsByUser($userId);
+
+		print "Roles of [$username]:\n";
+		if($roles) foreach($roles as $role)
+		{
+			print $role->name;
+
+			if(!empty($role->description))
+			{
+				print "\t".$role->description;
+			}
+			print "\n";
+		}
+		else
+		{
+			print "...empty\n";
+		}
+
+		print "\n";
+
+		print "Permissions of [$username]:\n";
+		if($permissions) foreach($permissions as $perm)
+		{
+			print $perm->name;
+
+			if(!empty($perm->description))
+			{
+				print "\t".$perm->description;
+			}
+			print "\n";
+		}
+		else
+		{
+			print "...empty\n";
+		}
 		return ExitCode::OK;
 	}
 }

@@ -8,6 +8,7 @@ use Yii;
 use yii\console\Controller;
 use yii\console\ExitCode;
 use yii\web\IdentityInterface;
+use yii\helpers\ArrayHelper;
 
 /**
  *

@@ -10,6 +10,7 @@ use yii\console\ExitCode;
 use yii\web\IdentityInterface;
 use yii\helpers\ArrayHelper;
 
+
 /**
  *
  * RBAC configuration and managment tool in the console.

@@ -465,7 +465,7 @@ abstract class RbacController extends Controller
 		$userId = $identity->getId();
 
 
-		if($auth->revoke($item, $userId))
+		if($authManager->revoke($item, $userId))
 		{
 			print "The $type [$rolename] successfully revoked from user [$username].\n";
 			return ExitCode::OK;

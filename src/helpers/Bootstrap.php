@@ -48,15 +48,23 @@ class Bootstrap extends Html
 	 *
 	 * Defalut options:
 	 *
-	 * 	 - language: Yii::$app->language,
-	 *	 - format: 'dd.mm.yyyy',
-	 *   - pickTime: false,
-	 *   - todayBtn: 'linked',
-	 *   - autoclose: true,
-	 *   - todayHighlight: true
+	 * 	 - 'language'       => Yii::$app->language,
+	 *	 - 'format'         => 'dd.mm.yyyy',
+	 *   - 'pickTime'       => false,
+	 *   - 'todayBtn'       => 'linked',
+	 *   - 'autoclose'      => true,
+	 *   - 'todayHighlight' => true,
+	 *
+	 *   - 'maxlength'   => 10,
+	 *   - 'readonly'    => false,
+	 *   - 'pickonly'    => false,
+	 *   - 'disabled'    => false,
+	 *   - 'class'       => false,
+	 *   - 'style'       => false,
+	 *   - 'placeholder' => false,
 	 *
 	 * @param string|array $name element name and element id  (if "Form[date]" then id="Form-date"). Array for daterange.
-	 * @param string|array $value value in format DD.MM.YYYY. Array for daterange.
+	 * @param string|array $value value in format dd.mm.yyyy. Array for daterange.
 	 * @param array $options options, see manual page.
 	 */
 	static function datepicker($name, $value = "", $options=null)
@@ -64,12 +72,20 @@ class Bootstrap extends Html
 		DatepickerAsset::register( Yii::$app->view );
 
 		$defaultOptions = [
-				'language' => Yii::$app->language,
-				 'format' => 'dd.mm.yyyy',
-				 'pickTime' => false,
-				 'todayBtn' => 'linked',
-				 'autoclose' => true,
-				 'todayHighlight' => true,
+				'language'       => Yii::$app->language,
+				'format'         => 'dd.mm.yyyy',
+				'pickTime'       => false,
+				'todayBtn'       => 'linked',
+				'autoclose'      => true,
+				'todayHighlight' => true,
+
+				'maxlength'   => 10,
+				'readonly'    => false,
+				'pickonly'    => false,
+				'disabled'    => false,
+				'class'       => false,
+				'style'       => false,
+				'placeholder' => false,
 			];
 
 		if(!is_null($options) and is_array($options))
@@ -78,28 +94,82 @@ class Bootstrap extends Html
 		}
 
 
-		$arOptions = [];
+		if(isset($defaultOptions['maxlength']) and $defaultOptions['maxlength'])
+			$maxlength = 'maxlength="'.(int)$defaultOptions['maxlength'].'"';
+		else
+			$maxlength = '';
+
+
+		if(isset($defaultOptions['disabled']) and $defaultOptions['disabled'])
+			$disabled = 'disabled';
+		else
+			$disabled = '';
+
+		if(isset($defaultOptions['readonly']) and $defaultOptions['readonly'])
+			$readonly = 'readonly';
+		else
+			$readonly = '';
+
+		if(isset($defaultOptions['pickonly']) and $defaultOptions['pickonly'])
+		{
+			$readonly = 'readonly';
+			$defaultOptions['enableOnReadonly'] = true;
+
+			if(!$disabled)
+			{
+				if(!empty($defaultOptions['style']))
+					$defaultOptions['style'] = 'background-color:#fff;'.$defaultOptions['style'];
+				else
+					$defaultOptions['style'] = 'background-color:#fff;';
+			}
+		}
+
+
+
+
+
+		if(isset($defaultOptions['placeholder']) and $defaultOptions['placeholder'])
+			$placeholder = 'placeholder="'.self::encode($defaultOptions['placeholder']).'"';
+		else
+			$placeholder = '';
+
+
+		if(isset($defaultOptions['class']) and $defaultOptions['class'])
+			$class = $defaultOptions['class'];
+		else
+			$class = '';
+
+		if(isset($defaultOptions['style']) and $defaultOptions['style'])
+			$style = 'style="'.$defaultOptions['style'].'"';
+		else
+			$style = '';
+
+
+		unset($defaultOptions['maxlength'], $defaultOptions['readonly'], $defaultOptions['pickonly'], $defaultOptions['disabled'], $defaultOptions['placeholder'], $defaultOptions['class'], $defaultOptions['style']);
+
+
+
+		$jsOptions = [];
 		foreach($defaultOptions as $key => $val)
 		{
 			if(is_bool($val))
 			{
-
 				if($val)
-					$arOptions[] = $key.': true';
+					$jsOptions[$key] = $key.':true';
 				else
-					$arOptions[] = $key.': false';
+					$jsOptions[$key] = $key.':false';
 			}
 			elseif(is_int($val) or (is_string($val) and preg_match('/^function/i', $val)))
 			{
-				$arOptions[] = $key.': '.$val;
+				$jsOptions[$key] = $key.':'.$val;
 			}
 			elseif(is_array($val))
 			{
-				$arOptions[] = $key.': '.json_encode($val);
+				$jsOptions[$key] = $key.':'.json_encode($val);
 			}
 			else // string
 			{
-				$arOptions[] = $key.': "'.$val.'"';
+				$jsOptions[$key] = $key.':"'.$val.'"';
 			}
 		}
 
@@ -117,27 +187,14 @@ class Bootstrap extends Html
 					throw new \yii\base\Exception("Invalid value datepicker. Value must be string.");
 			}
 
-			if(isset($options['placeholder']))
-				$placeholder = 'placeholder="'.self::encode($options['placeholder']).'"';
-			else
-				$placeholder = '';
-
-
-			if(isset($options['class']))
-				$class = $options['class'];
-			else
-				$class = '';
-
-			$html = '
-					 <div class="input-group date"  >
-						<input type="text" class="form-control '.$class.'" id="'.$id.'" name="'.$name.'" value="'.$value.'" maxlength="10" '.$placeholder.' />
-						<span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
-					 </div>
+			$html = '<div class="input-group date">
+						<input type="text" class="form-control '.$class.'" '.$style.' id="'.$id.'" name="'.$name.'" value="'.$value.'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' />
+						<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+					</div>
 
 				<script>
-						$("#'.$id.'").parent().datepicker({ '.implode(',', $arOptions ).' });
+						$("#'.$id.'").parent().datepicker({ '.implode(',', $jsOptions ).' });
 				</script>';
-
 		}
 		elseif(is_array($name) and isset($name[0]) and isset($name[1]))
 		{
@@ -159,17 +216,15 @@ class Bootstrap extends Html
 				$value = [$value, $value];
 			}
 
-			$html = '
-
-					<div class="input-daterange input-group" id="datepicker" >
-						<input type="text" class="input-sm form-control" id="'.$id[0].'" name="'.$name[0].'" value="'.$value[0].'" />
-						<span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
-						<input type="text" class="input-sm form-control" id="'.$id[1].'" name="'.$name[1].'" value="'.$value[1].'" />
+			$html = '<div class="input-daterange input-group" id="datepicker">
+						<input type="text" class="input-sm form-control '.$class.'" '.$style.' id="'.$id[0].'" name="'.$name[0].'" value="'.$value[0].'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' />
+						<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+						<input type="text" class="input-sm form-control '.$class.'" '.$style.' id="'.$id[1].'" name="'.$name[1].'" value="'.$value[1].'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' />
 					</div>
 					<script>
 						$(document).ready(function()
 						{
-							$("#'.$id[0].'").parent().datepicker({ '.implode(',', $arOptions ).' });
+							$("#'.$id[0].'").parent().datepicker({ '.implode(',', $jsOptions ).' });
 						});
 					</script>
 				';

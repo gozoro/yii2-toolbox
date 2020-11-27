@@ -7,6 +7,7 @@ use Yii;
 use gozoro\toolbox\helpers\Html;
 use gozoro\toolbox\assets\bootstrap\DatepickerAsset;
 use gozoro\toolbox\assets\bootstrap\ButtonUploadAsset;
+use gozoro\toolbox\assets\bootstrap\AutocompleterAsset;
 
 /**
  * Bootstrap 3 HTML helpers
@@ -66,6 +67,8 @@ class Bootstrap extends Html
 	 * @param string|array $name element name and element id  (if "Form[date]" then id="Form-date"). Array for daterange.
 	 * @param string|array $value value in format dd.mm.yyyy. Array for daterange.
 	 * @param array $options options, see manual page.
+	 *
+	 * @return string the generated datepicker input tag.
 	 */
 	static function datepicker($name, $value = "", $options=null)
 	{
@@ -235,5 +238,110 @@ class Bootstrap extends Html
 		}
 
 		return $html;
+	}
+
+
+
+	/**
+	 * Returns HTML with autocomplte input.
+	 *
+	 *
+	 * @param string $name element name and element id  (if "Form[name]" then id="Form-name").
+	 * @param string $value current text input value.
+	 * @param array|string $variants array of items or url to AJAX GET-request and JSON response.
+	 * @param array $options options.
+	 * @return string the generated autocompleter input tag.
+	 */
+	static function autocompleter($name, $value="", $variants=[], $options=null)
+	{
+		AutocompleterAsset::register( Yii::$app->view );
+
+		$defaultOptions = [
+				'maxlength'   => false,
+				'readonly'    => false,
+				'disabled'    => false,
+				'class'       => false,
+				'style'       => false,
+				'placeholder' => false,
+		];
+
+
+		if(!is_null($options) and is_array($options))
+		{
+			$defaultOptions = array_merge($defaultOptions, $options);
+		}
+
+
+		if(isset($defaultOptions['maxlength']) and $defaultOptions['maxlength'])
+			$maxlength = 'maxlength="'.(int)$defaultOptions['maxlength'].'"';
+		else
+			$maxlength = '';
+
+
+		if(isset($defaultOptions['disabled']) and $defaultOptions['disabled'])
+			$disabled = 'disabled';
+		else
+			$disabled = '';
+
+		if(isset($defaultOptions['readonly']) and $defaultOptions['readonly'])
+			$readonly = 'readonly';
+		else
+			$readonly = '';
+
+
+
+
+		if(isset($defaultOptions['placeholder']) and $defaultOptions['placeholder'])
+			$placeholder = 'placeholder="'.self::encode($defaultOptions['placeholder']).'"';
+		else
+			$placeholder = '';
+
+
+		if(isset($defaultOptions['class']) and $defaultOptions['class'])
+			$class = $defaultOptions['class'];
+		else
+			$class = '';
+
+		if(isset($defaultOptions['style']) and $defaultOptions['style'])
+			$style = 'style="'.$defaultOptions['style'].'"';
+		else
+			$style = '';
+
+
+		unset($defaultOptions['maxlength'], $defaultOptions['readonly'], $defaultOptions['disabled'], $defaultOptions['placeholder'], $defaultOptions['class'], $defaultOptions['style']);
+
+
+		if(is_string($name))
+		{
+			$id = str_replace('[', '-', $name);
+			$id = str_replace(']', '', $id);
+
+			if(is_array($variants))
+			{
+				$jsVariants = json_encode($variants);
+			}
+			elseif(is_string($variants))
+			{
+				$jsVariants = $variants; // ajax url
+			}
+		}
+		else
+		{
+			throw new \yii\base\Exception("Invalid name autocompleter.");
+		}
+
+
+
+
+		return
+		'<input id="'.$id.'" name="'.$name.'" type="text" class="form-control autocompleter '.$class.'" '.$style.' value="'.self::encode($value).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' autocomplete="off">
+		<script>
+
+			$(document).ready(function()
+			{
+				$("#'.$id.'").autocompleter('.$variants.' );
+			});
+
+		</script>';
 	}
 }

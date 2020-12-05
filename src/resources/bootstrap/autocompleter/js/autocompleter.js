@@ -15,24 +15,32 @@
             maxResults: 0,
 			minChars: 1,
 			timeout: 500,
-			useIndex: false,
-			emptyValue: '',
-			regexpBegin: '',
-			regexpEnd: '',
-			regexpFlags: 'i',
+
+
+			matchRegexp: null,
+			matchValue:  function(item, index){return item;},
+			itemDisplay: function(item, index){return item;},
+			itemValue:   null,
+			emptyValue: ''
         }, options);
+
+		var _this = this;
 
 
 		return this.each(function()
 		{
 			var selectLock = false;
+			var useHiddenInput = (typeof options['itemValue'] == 'function');
 
 			var searchInput = $(this);
-			var searchInputValue = searchInput.val();
+			var searchInputValue = searchInput.val().trim();
+			var searchInputName = searchInput.attr('name');
 			var hiddenInput = $('<input type="hidden" value="'+options['emptyValue']+'">');
 			var resultPanel = $('<div>').addClass('autocompleter-result');
 			var resultPanelVisible = false;
 			searchInput.after(resultPanel);
+
+
 
 			function reposition()
 			{
@@ -45,15 +53,28 @@
 				});
 			}
 
-			// Reposition the results on window resize and font load in case the search box has moved
 			window.addEventListener('resize', reposition);
 			document.fonts.ready.then(reposition);
 
 			reposition();
 
 
+			if(typeof options['itemValue'] == 'function')
+			{
+				var name = searchInput.attr('name');
+				searchInput.removeAttr('name');
+				hiddenInput.attr('name', name);
+				searchInput.after(hiddenInput);
+			}
+
+
+
+
+
 			resultPanel.show = function()
 			{
+				console.log( 'resultPanelVisible=' + resultPanelVisible +'; resultPanel.show(); ');
+
 				if(!resultPanelVisible)
 					$.fn.show.apply(this, arguments);
 
@@ -61,15 +82,21 @@
 				$('.selected').removeClass('selected');
 				resultPanel.children().first().addClass('selected');
 				resultPanel.scrollTop(0);
+				_this.trigger('resultShow', {});
+
 			}
 
 			resultPanel.hide = function()
 			{
+				console.log('resultPanelVisible=' + resultPanelVisible + '; resultPanel.hide(); ');
+
 				if(resultPanelVisible)
-				{
 					$.fn.hide.apply(this, arguments);
-					resultPanelVisible = false;
-				}
+
+				resultPanelVisible = false;
+				_this.trigger('resultHide', {});
+
+
 			}
 
 			searchInput.blur(function()
@@ -80,8 +107,28 @@
 			searchInput.click(function()
 			{
 				var value = searchInput.val();
+
+				console.log('searchInput.CLick');
+
 				search(value);
+
+				if(resultPanel.children().length)
+				    resultPanel.show()
+
 			});
+
+			searchInput.on('paste', function(event)
+			{
+				console.log('paste');
+								var value = event.originalEvent.clipboardData.getData('text');
+
+
+				search(value);
+
+				if(resultPanel.children().length)
+				    resultPanel.show()
+			});
+
 
 
 			resultPanel.mouseout(function()
@@ -93,22 +140,30 @@
 				}
 			});
 
-			resultPanel.addResultItem = function(itemValue, itemIndex)
+			resultPanel.addResultItem = function(item, itemIndex)
 			{
-						var resultRow = $('<div>').addClass('autocompleter-item')
-							.html(itemValue)
+				var matchValue = options['matchValue'](item, itemIndex);
+				if(typeof options['itemValue'] == 'function')
+				{
+					var itemValue = options['itemValue'](item, itemIndex);
+				}
+				else
+				{
+					var itemValue = matchValue;
+				}
+
+
+				var resultRow = $('<div>').addClass('autocompleter-item')
+							.attr('data-match-value', matchValue)
+							.attr('data-value', itemValue)
+							.html( options['itemDisplay'](item, itemIndex) )
 							.mousedown(function(event)
 							{
 								event.preventDefault(); // This prevents the element from being hidden by .blur before it's clicked
 							})
 							.click(function()
 							{
-								var item = $(this);
-								var newValue = item.html();
-								searchInput.val( newValue );
-								searchInputValue = newValue;
-
-								resultPanel.hide();
+								resultPanel.selectVariant($(this)).hide();
 								console.log('item click');
 							})
 							.mouseover(function()
@@ -141,6 +196,9 @@
 				inputDelay(function()
 				{
 					var value = searchInput.val();
+
+					console.log('keyup before search');
+
 					search(value);
 				});
 			});
@@ -156,15 +214,12 @@
 					case 13: // Enter
 						event.preventDefault();
 
-						var selectedItem = resultPanel.find('.selected').first();
+						var selectedVariant = resultPanel.find('.selected').first();
 
-						if(selectedItem.length)
+						if(selectedVariant.length)
 						{
 							$('.selected').removeClass('selected');
-							var newValue = selectedItem.html();
-							searchInput.val( newValue );
-							searchInputValue = newValue;
-
+							resultPanel.selectVariant(selectedVariant);
 							console.log('Enter');
 						}
 
@@ -176,6 +231,32 @@
 				}
 			});
 
+			resultPanel.selectVariant = function(variant)
+			{
+				console.log('select variant:');
+
+
+				var matchValue = variant.data('match-value');
+				var itemValue = variant.data('value');
+
+
+
+
+
+				if(typeof options['itemValue'] == 'function')
+				{
+					hiddenInput.val(itemValue);
+
+				}
+
+				searchInput.val( matchValue );
+				searchInputValue = matchValue;
+				resultPanel.empty();
+
+
+
+				return this;
+			}
 
 
 
@@ -338,48 +419,93 @@
 
 			function search(value)
 			{
-				console.log('function search');
+				console.log('function search !!!');
+				value = value.trim();
 
-				if(!value)
+				if(value === searchInputValue)
 				{
-					resultPanel.hide();
-					resultPanel.empty();
-					searchInputValue = value;
+					console.log('value==value');
 					return;
 				}
 
-
-				if(value === searchInputValue) return;
+				hiddenInput.val(options['emptyValue']);
 				searchInputValue = value;
-
-
-
-
 				resultPanel.empty();
 
-
-				if($.isArray(variants))
+				if(!value)
 				{
-						var regexp = options['regexpBegin'] + escapeRegExp(value) + options['regexpEnd'];
-						var flags  = options['regexpFlags'];
 
-						console.log('search regexp = '+regexp);
+					resultPanel.hide();
+					return;
+				}
+
+				if(value.length < options['minChars']) return;
+
+				_this.trigger('beforeSearch', {val:value});
+
+				if(!$.isArray(variants))
+				{
+
+					console.log('AJAX');
+					$.get(variants, {searchInputName:value}, function(response){ compilation(value, response); });
+				}
+				else
+				{
+					compilation(value, variants);
+				}
+			} // end search()
 
 
 
+			function compilation(value, variants)
+			{
 
 
-					variants.filter(function(itemValue)
+					if(typeof options['matchRegexp'] == 'function')
+						var regexp = options['matchRegexp'](value, escapeRegExp);
+					else
+						var regexp = RegExp(escapeRegExp(value), 'i');
+
+
+					var fullregexp = RegExp('^'+escapeRegExp(value)+'$', regexp.flags);
+
+
+
+					console.log('search regexp: '+regexp + "; flags: " +regexp.flags );
+					console.log('maxResults = ' + options['maxResults']);
+
+
+					var i = 0;
+					variants.filter(function(item, itemIndex)
 					{
-						if(itemValue.match(RegExp(regexp, flags)))
+						var matchValue = options['matchValue'](item, itemIndex);
+
+							if(typeof options['itemValue'] == 'function')
+							{
+								var itemValue = options['itemValue'](item, itemIndex);
+							}
+							else
+							{
+								var itemValue = matchValue;
+							}
+
+
+						if(matchValue.match(regexp) && (options['maxResults'] <= 0 || i < options['maxResults']))
 						{
-							/////////////////////////
-							resultPanel.addResultItem(itemValue);
-							//////////////////////////
+							resultPanel.addResultItem(item, itemIndex);
+							i++;
 						}
+
+						if(matchValue.match(fullregexp))
+						{
+							hiddenInput.val(itemValue);
+						}
+
+
+
 					});
 
-
+					_this.trigger('afterSearch', {});
 
 					if(resultPanel.children().length)
 					{
@@ -389,32 +515,8 @@
 					{
 						resultPanel.hide();
 					}
+			}
 
-
-				}
-				else
-				{
-					console.log('try get ajax data');
-					$.get(variants, {}, function(req)
-					{
-						for(var k in req)
-							resultPanel.addResultItem(req[k], k);
-
-
-						console.log('ajax data - OK');
-
-
-						if(resultPanel.children().length)
-						{
-							resultPanel.show();
-						}
-						else
-						{
-							resultPanel.hide();
-						}
-					});
-				}
-			} // end search()
 
 
 		}); // end each

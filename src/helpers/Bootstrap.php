@@ -152,30 +152,31 @@ class Bootstrap extends Html
 
 
 
-		$jsOptions = [];
-		foreach($defaultOptions as $key => $val)
-		{
-			if(is_bool($val))
-			{
-				if($val)
-					$jsOptions[$key] = $key.':true';
-				else
-					$jsOptions[$key] = $key.':false';
-			}
-			elseif(is_int($val) or (is_string($val) and preg_match('/^function/i', $val)))
-			{
-				$jsOptions[$key] = $key.':'.$val;
-			}
-			elseif(is_array($val))
-			{
-				$jsOptions[$key] = $key.':'.json_encode($val);
-			}
-			else // string
-			{
-				$jsOptions[$key] = $key.':"'.$val.'"';
-			}
-		}
+//		$jsOptions = [];
+//		foreach($defaultOptions as $key => $val)
+//		{
+//			if(is_bool($val))
+//			{
+//				if($val)
+//					$jsOptions[$key] = $key.':true';
+//				else
+//					$jsOptions[$key] = $key.':false';
+//			}
+//			elseif(is_int($val) or (is_string($val) and preg_match('/^function/i', $val)))
+//			{
+//				$jsOptions[$key] = $key.':'.$val;
+//			}
+//			elseif(is_array($val))
+//			{
+//				$jsOptions[$key] = $key.':'.json_encode($val);
+//			}
+//			else // string
+//			{
+//				$jsOptions[$key] = $key.':"'.$val.'"';
+//			}
+//		}
 
+		$jsOptions = self::phpOptions2jsOptions($defaultOptions);
 
 
 
@@ -196,7 +197,7 @@ class Bootstrap extends Html
 					</div>
 
 				<script>
-						$("#'.$id.'").parent().datepicker({ '.implode(',', $jsOptions ).' });
+						$("#'.$id.'").parent().datepicker('.$jsOptions.');
 				</script>';
 		}
 		elseif(is_array($name) and isset($name[0]) and isset($name[1]))
@@ -227,7 +228,7 @@ class Bootstrap extends Html
 					<script>
 						$(document).ready(function()
 						{
-							$("#'.$id[0].'").parent().datepicker({ '.implode(',', $jsOptions ).' });
+							$("#'.$id[0].'").parent().datepicker('.$jsOptions.');
 						});
 					</script>
 				';
@@ -241,9 +242,53 @@ class Bootstrap extends Html
 	}
 
 
+	/**
+	 * Returns string with options for insert to javascript code.
+	 *
+	 * @param array $options php options
+	 * @return string
+	 */
+	private static function phpOptions2jsOptions($options)
+	{
+		$jsOptions = [];
+		foreach($options as $key => $val)
+		{
+			if(is_bool($val))
+			{
+				if($val)
+					$jsOptions[$key] = $key.':true';
+				else
+					$jsOptions[$key] = $key.':false';
+			}
+			elseif(is_int($val) or (is_string($val) and preg_match('/^function/i', $val)))
+			{
+				$jsOptions[$key] = $key.':'.$val;
+			}
+			elseif(is_array($val))
+			{
+				$jsOptions[$key] = $key.':'.json_encode($val);
+			}
+			else // string
+			{
+				$jsOptions[$key] = $key.':"'.$val.'"';
+			}
+		}
+		return '{'.implode(',', $jsOptions ).'}';
+	}
+
+
 
 	/**
 	 * Returns HTML with autocomplte input.
+	 *
+	 * Default options:
+	 *
+	 * - maxResults  => 0,   // maximum number of suggestions (0 - no limits)
+	 * - minChars    => 1,   // minimum number of characters for the suggestions
+	 * - timeout     => 500, // keyboard input timeout
+	 *
+	 *
+	 *
 	 *
 	 *
 	 * @param string $name element name and element id  (if "Form[name]" then id="Form-name").
@@ -311,6 +356,12 @@ class Bootstrap extends Html
 		unset($defaultOptions['maxlength'], $defaultOptions['readonly'], $defaultOptions['disabled'], $defaultOptions['placeholder'], $defaultOptions['class'], $defaultOptions['style']);
 
 
+
+		$jsOptions = self::phpOptions2jsOptions($defaultOptions);
+
+
+
+
 		if(is_string($name))
 		{
 			$id = str_replace('[', '-', $name);
@@ -322,7 +373,7 @@ class Bootstrap extends Html
 			}
 			elseif(is_string($variants))
 			{
-				$jsVariants = $variants; // ajax url
+				$jsVariants = '"'.$variants.'"'; // ajax url
 			}
 		}
 		else
@@ -339,7 +390,7 @@ class Bootstrap extends Html
 
 			$(document).ready(function()
 			{
-				$("#'.$id.'").autocompleter('.$variants.' );
+				$("#'.$id.'").autocompleter('.$jsVariants.', '.$jsOptions.' );
 			});
 
 		</script>';

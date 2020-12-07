@@ -1,12 +1,10 @@
 ;(function($)
 {
-
-	if(typeof(jQuery) == 'undefined')
+	if(typeof($) == 'undefined')
 	{
-		console.warn('Autocompleter plugin requires jQuery.');
+		console.warn('Required jQuery.');
 		return;
 	}
-
 
 
 	$.fn.autocompleter = function(variants, options)
@@ -15,8 +13,6 @@
             maxResults: 0,
 			minChars: 1,
 			timeout: 500,
-
-
 			matchRegexp: null,
 			matchValue:  function(item, index){return item;},
 			itemDisplay: function(item, index){return item;},
@@ -29,14 +25,13 @@
 
 		return this.each(function()
 		{
-			var selectLock = false;
-			var useHiddenInput = (typeof options['itemValue'] == 'function');
-
-			var searchInput = $(this);
-			var searchInputValue = searchInput.val().trim();
+			var mouseLock       = false;
+			var useHiddenInput  = (typeof options['itemValue'] == 'function');
+			var searchInput     = $(this);
+			var oldValue        = searchInput.val().trim();
 			var searchInputName = searchInput.attr('name');
-			var hiddenInput = $('<input type="hidden" value="'+options['emptyValue']+'">');
-			var resultPanel = $('<div>').addClass('autocompleter-result');
+			var hiddenInput     = $('<input type="hidden" value="'+options['emptyValue']+'">');
+			var resultPanel     = $('<div>').addClass('autocompleter-result');
 			var resultPanelVisible = false;
 			searchInput.after(resultPanel);
 
@@ -47,9 +42,9 @@
 				var pos = searchInput.position();
 
 				resultPanel.css({
-					'left': pos.left,
-					'top': pos.top + searchInput.outerHeight(),
-					'width': searchInput.outerWidth()
+					left: pos.left,
+					top: pos.top + searchInput.outerHeight(),
+					width: searchInput.outerWidth()
 				});
 			}
 
@@ -59,44 +54,34 @@
 			reposition();
 
 
-			if(typeof options['itemValue'] == 'function')
+
+			if(useHiddenInput)
 			{
-				var name = searchInput.attr('name');
-				searchInput.removeAttr('name');
-				hiddenInput.attr('name', name);
-				searchInput.after(hiddenInput);
+				hiddenInput.attr('name', searchInput.attr('name') );
+				searchInput.removeAttr('name').after(hiddenInput);
 			}
 
-
-
-
+			resultPanel.unselect = function()
+			{
+				resultPanel.find('.selected').removeClass('selected');
+				return this;
+			}
 
 			resultPanel.show = function()
 			{
-				console.log( 'resultPanelVisible=' + resultPanelVisible +'; resultPanel.show(); ');
-
-				if(!resultPanelVisible)
-					$.fn.show.apply(this, arguments);
+				$.fn.show.apply(this, arguments);
 
 				resultPanelVisible = true;
-				$('.selected').removeClass('selected');
-				resultPanel.children().first().addClass('selected');
-				resultPanel.scrollTop(0);
+				resultPanel.unselect().scrollTop(0).children().first().addClass('selected');
 				_this.trigger('resultShow', {});
-
 			}
 
 			resultPanel.hide = function()
 			{
-				console.log('resultPanelVisible=' + resultPanelVisible + '; resultPanel.hide(); ');
-
-				if(resultPanelVisible)
-					$.fn.hide.apply(this, arguments);
+				$.fn.hide.apply(this, arguments);
 
 				resultPanelVisible = false;
 				_this.trigger('resultHide', {});
-
-
 			}
 
 			searchInput.blur(function()
@@ -106,44 +91,35 @@
 
 			searchInput.click(function()
 			{
-				var value = searchInput.val();
-
-				console.log('searchInput.CLick');
-
-				search(value);
-
-				if(resultPanel.children().length)
-				    resultPanel.show()
-
+				search( searchInput.val(), 1);
 			});
 
 			searchInput.on('paste', function(event)
 			{
-				console.log('paste');
-								var value = event.originalEvent.clipboardData.getData('text');
-
-
-				search(value);
-
-				if(resultPanel.children().length)
-				    resultPanel.show()
+				search( event.originalEvent.clipboardData.getData('text'), 1);
 			});
-
 
 
 			resultPanel.mouseout(function()
 			{
-				if(!selectLock)
+				if(!mouseLock)
 				{
-					$('.selected').removeClass('selected');
-					console.log('mouseout: ' + resultPanel.height());
+					resultPanel.unselect();
 				}
 			});
+
+			resultPanel.reselect = function(row)
+			{
+				mouseLock = false;
+				resultPanel.unselect();
+				$(row).addClass('selected');
+			}
 
 			resultPanel.addResultItem = function(item, itemIndex)
 			{
 				var matchValue = options['matchValue'](item, itemIndex);
-				if(typeof options['itemValue'] == 'function')
+
+				if(useHiddenInput)
 				{
 					var itemValue = options['itemValue'](item, itemIndex);
 				}
@@ -151,7 +127,6 @@
 				{
 					var itemValue = matchValue;
 				}
-
 
 				var resultRow = $('<div>').addClass('autocompleter-item')
 							.attr('data-match-value', matchValue)
@@ -164,24 +139,19 @@
 							.click(function()
 							{
 								resultPanel.selectVariant($(this)).hide();
-								console.log('item click');
 							})
 							.mouseover(function()
 							{
-								if(!selectLock)
+								if(!mouseLock)
 								{
-									selectLock = false;
-									$('.selected').removeClass('selected');
-									$(this).addClass('selected');
+									resultPanel.reselect(this);
 								}
 							})
 							.mousemove(function()
 							{
-								if(selectLock)
+								if(mouseLock)
 								{
-									selectLock = false;
-									$('.selected').removeClass('selected');
-									$(this).addClass('selected');
+									resultPanel.reselect(this);
 								}
 							})
 							;
@@ -189,194 +159,114 @@
 							resultPanel.append(resultRow);
 			}
 
-
-
-			searchInput.keyup(function(event)
+			searchInput.keyup(function()
 			{
 				inputDelay(function()
 				{
-					var value = searchInput.val();
-
-					console.log('keyup before search');
-
-					search(value);
+					search( searchInput.val() );
 				});
 			});
-
 
 			searchInput.keydown(function(event)
 			{
 				switch(event.which)
 				{
-					case 38: keydown_keyUpArrow(); return;
-					case 40: keydown_keyDownArrow(); return;
-
-					case 13: // Enter
-						event.preventDefault();
-
-						var selectedVariant = resultPanel.find('.selected').first();
-
-						if(selectedVariant.length)
-						{
-							$('.selected').removeClass('selected');
-							resultPanel.selectVariant(selectedVariant);
-							console.log('Enter');
-						}
-
-						resultPanel.hide();
-						return;
-					case 9: resultPanel.hide(); return; // Tab
+					case 38: pressUpArrow(); return;
+					case 40: pressDownArrow(); return;
+					case 13: pressEnter(event); return;
+					case 9:  resultPanel.hide(); return; // Tab
 					case 27: resultPanel.hide(); return; // Esc
-
 				}
 			});
 
 			resultPanel.selectVariant = function(variant)
 			{
-				console.log('select variant:');
-
-
 				var matchValue = variant.data('match-value');
 				var itemValue = variant.data('value');
 
-
-
-
-
-				if(typeof options['itemValue'] == 'function')
-				{
+				if(useHiddenInput)
 					hiddenInput.val(itemValue);
 
-				}
-
 				searchInput.val( matchValue );
-				searchInputValue = matchValue;
+				oldValue = matchValue;
 				resultPanel.empty();
-
-
 
 				return this;
 			}
 
+			function pressEnter(event)
+			{
+				event.preventDefault();
 
+				var selectedVariant = resultPanel.find('.selected').first();
 
+				if(selectedVariant.length)
+				{
+					resultPanel.unselect().selectVariant(selectedVariant);
+				}
 
+				resultPanel.hide();
+			}
 
-			function keydown_keyUpArrow()
+			function pressUpArrow()
 			{
 				if(resultPanelVisible)
 				{
-					selectLock = true;
+					mouseLock = true;
 					var selectedItem = resultPanel.find('.selected').first();
 
 					if(selectedItem.length)
 					{
-						$('.selected').removeClass('selected');
+						resultPanel.unselect();
 
 						var prevItem = selectedItem.prev();
 
 						if(prevItem.length)
 						{
-							prevItem.addClass('selected');
+							var itemTop = prevItem.addClass('selected').position().top ;
+							var offset  = resultPanel.position().top - prevItem.innerHeight();
 
-							var panelpos = resultPanel.position();
-							var itempos  = prevItem.position();
-
-							var panelTop    = panelpos.top;
-							var panelHeight = resultPanel.outerHeight() ;
-							var panelBottom = panelTop + panelHeight;
-							var itemTop     = itempos.top ;
-							var itemHeight  = prevItem.innerHeight();
-							var itemBottom  = itemTop + itemHeight;
-
-
-							var curScroll   = resultPanel.scrollTop();
-							var nextScroll  = 0;
-
-							var delta = panelTop + itemTop;
-
-							if(itemTop < panelTop - itemHeight)
-								nextScroll = curScroll   - itemHeight  + delta;
-
-							if(itemTop < panelTop - itemHeight)
+							if(itemTop < offset)
 							{
-								resultPanel.scrollTop( nextScroll  );
+								resultPanel.scrollTop( resultPanel.scrollTop() + offset + itemTop );
 							}
+							return;
 						}
-						else
-						{
-							resultPanel.children().last().addClass('selected');
-							resultPanel.scrollTop( resultPanel.get(0).scrollHeight );
-						}
-					}
-					else
-					{
-						resultPanel.children().last().addClass('selected');
-						resultPanel.scrollTop( resultPanel.get(0).scrollHeight );
 					}
 
-					console.log('key upArrow');
+					resultPanel.scrollTop( resultPanel.get(0).scrollHeight ).children().last().addClass('selected');
 				}
 			}
 
 
-
-
-
-			function keydown_keyDownArrow()
+			function pressDownArrow()
 			{
 				if(resultPanelVisible)
 				{
-					selectLock = true;
+					mouseLock = true;
 					var selectedItem = resultPanel.find('.selected').first();
 
 					if(selectedItem.length)
 					{
-						$('.selected').removeClass('selected');
+						resultPanel.unselect();
 
 						var nextItem = selectedItem.next();
 
 						if(nextItem.length)
 						{
-							nextItem.addClass('selected');
-
-							var panelpos = resultPanel.position();
-							var itempos  = nextItem.position();
-
-							var panelTop    = panelpos.top;
 							var panelHeight = resultPanel.outerHeight() ;
-							var panelBottom = panelTop + panelHeight;
-							var itemTop     = itempos.top ;
-							var itemHeight  = nextItem.innerHeight();
-							var itemBottom  = itemTop + itemHeight;
-
-							var curScroll = resultPanel.scrollTop();
-							var nextScroll = 0;
-
-							var delta = panelBottom - itemBottom;
-
-							if(itemBottom > panelHeight)
-								nextScroll = curScroll + itemHeight;
-
+							var itemHeight  = nextItem.addClass('selected').innerHeight();
+							var itemBottom  = nextItem.position().top + itemHeight;
 
 							if(itemBottom > panelHeight)
 							{
-								resultPanel.scrollTop( nextScroll - delta );
+								resultPanel.scrollTop( resultPanel.scrollTop() + itemHeight - resultPanel.position().top - panelHeight + itemBottom );
 							}
+							return;
 						}
-						else
-						{
-							resultPanel.children().first().addClass('selected');
-							resultPanel.scrollTop( 0 );
-						}
-					}
-					else
-					{
-						resultPanel.children().first().addClass('selected');
-						resultPanel.scrollTop( 0 );
 					}
 
-					console.log('key downArrow');
+					resultPanel.scrollTop( 0 ).children().first().addClass('selected');
 				}
 				else
 				{
@@ -388,14 +278,9 @@
 			}
 
 
-
-
-
-
-
-			function escapeRegExp(string)
+			function escapeRegExp(str)
 			{
-				return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+				return str.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 			}
 
 
@@ -414,115 +299,85 @@
 			}
 
 
-
-
-
-			function search(value)
+			function search(value, forceShow)
 			{
-				console.log('function search !!!');
 				value = value.trim();
 
-				if(value === searchInputValue)
+				if(value === oldValue)
 				{
-					console.log('value==value');
+					if(forceShow && resultPanel.children().length)
+					{
+					    resultPanel.show();
+					}
+
 					return;
 				}
 
 				hiddenInput.val(options['emptyValue']);
-				searchInputValue = value;
+				oldValue = value;
 				resultPanel.empty();
 
-				if(!value)
+				if(!value || value.length < options['minChars'])
 				{
-
 					resultPanel.hide();
 					return;
 				}
-
-				if(value.length < options['minChars']) return;
 
 				_this.trigger('beforeSearch', {val:value});
 
 				if(!$.isArray(variants))
 				{
-
-					console.log('AJAX');
-					$.get(variants, {searchInputName:value}, function(response){ compilation(value, response); });
+					var data = {};
+					data[searchInputName] = value;
+					$.get(variants, data, function(response){ compilation(value, response); });
 				}
 				else
 				{
 					compilation(value, variants);
 				}
-			} // end search()
-
+			}
 
 
 			function compilation(value, variants)
 			{
+				if(typeof options['matchRegexp'] == 'function')
+					var regexp = options['matchRegexp'](value, escapeRegExp);
+				else
+					var regexp = RegExp(escapeRegExp(value), 'i');
 
 
-					if(typeof options['matchRegexp'] == 'function')
-						var regexp = options['matchRegexp'](value, escapeRegExp);
+				var fullregexp = RegExp('^'+escapeRegExp(value)+'$', regexp.flags);
+
+				var i = 0;
+				variants.filter(function(item, itemIndex)
+				{
+					var matchValue = options['matchValue'](item, itemIndex);
+
+					if(useHiddenInput)
+						var itemValue = options['itemValue'](item, itemIndex);
 					else
-						var regexp = RegExp(escapeRegExp(value), 'i');
+						var itemValue = matchValue;
 
 
-					var fullregexp = RegExp('^'+escapeRegExp(value)+'$', regexp.flags);
-
-
-
-					console.log('search regexp: '+regexp + "; flags: " +regexp.flags );
-					console.log('maxResults = ' + options['maxResults']);
-
-
-					var i = 0;
-					variants.filter(function(item, itemIndex)
+					if(matchValue.match(regexp) && (options['maxResults'] <= 0 || i < options['maxResults']))
 					{
-						var matchValue = options['matchValue'](item, itemIndex);
-
-							if(typeof options['itemValue'] == 'function')
-							{
-								var itemValue = options['itemValue'](item, itemIndex);
-							}
-							else
-							{
-								var itemValue = matchValue;
-							}
-
-
-						if(matchValue.match(regexp) && (options['maxResults'] <= 0 || i < options['maxResults']))
-						{
-							resultPanel.addResultItem(item, itemIndex);
-							i++;
-						}
-
-						if(matchValue.match(fullregexp))
-						{
-							hiddenInput.val(itemValue);
-						}
-
-
-
-					});
-
-					_this.trigger('afterSearch', {});
-
-					if(resultPanel.children().length)
-					{
-						resultPanel.show();
+						resultPanel.addResultItem(item, itemIndex);
+						i++;
 					}
-					else
-					{
-						resultPanel.hide();
-					}
+
+					if(matchValue.match(fullregexp))
+						hiddenInput.val(itemValue);
+				});
+
+				_this.trigger('afterSearch', {});
+
+				if(resultPanel.children().length)
+					resultPanel.show();
+				else
+					resultPanel.hide();
 			}
-
-
-
 		}); // end each
-
 	};
-
 }(jQuery));
 
 

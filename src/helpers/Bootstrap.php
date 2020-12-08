@@ -192,7 +192,7 @@ class Bootstrap extends Html
 			}
 
 			$html = '<div class="input-group date">
-						<input type="text" class="form-control '.$class.'" '.$style.' id="'.$id.'" name="'.$name.'" value="'.$value.'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' />
+						<input type="text" class="form-control '.$class.'" '.$style.' id="'.$id.'" name="'.$name.'" value="'.self::encode($value).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' />
 						<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
 					</div>
 
@@ -221,9 +221,9 @@ class Bootstrap extends Html
 			}
 
 			$html = '<div class="input-daterange input-group" id="datepicker">
-						<input type="text" class="input-sm form-control '.$class.'" '.$style.' id="'.$id[0].'" name="'.$name[0].'" value="'.$value[0].'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' />
+						<input type="text" class="input-sm form-control '.$class.'" '.$style.' id="'.$id[0].'" name="'.$name[0].'" value="'.self::encode($value[0]).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' />
 						<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-						<input type="text" class="input-sm form-control '.$class.'" '.$style.' id="'.$id[1].'" name="'.$name[1].'" value="'.$value[1].'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' />
+						<input type="text" class="input-sm form-control '.$class.'" '.$style.' id="'.$id[1].'" name="'.$name[1].'" value="'.self::encode($value[1]).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' />
 					</div>
 					<script>
 						$(document).ready(function()

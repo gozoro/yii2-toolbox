@@ -14,11 +14,11 @@ class AutocompleterAsset extends AssetBundle
 	public $sourcePath = '@vendor/gozoro/yii2-toolbox/src/resources/bootstrap/autocompleter';
 
 	public $js = [
-		'js/autocompleter.js',
+		'js/autocompleter.min.js',
 	];
 
 	public $css = [
-		'css/autocompleter.css'
+		'css/autocompleter.min.css'
 	];
 
 	public $jsOptions = ['position'=>\yii\web\view::POS_HEAD];

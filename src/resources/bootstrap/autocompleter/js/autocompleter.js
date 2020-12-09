@@ -13,7 +13,7 @@
             maxResults: 0,
 			minChars: 1,
 			timeout: 500,
-			matchRegexp: null,
+			matchRegexp: function(value, escape){return RegExp(escape(value), 'i')},
 			matchValue:  function(item, index){return item;},
 			itemDisplay: function(item, index){return item;},
 			itemValue:   null,
@@ -340,14 +340,8 @@
 
 			function compilation(value, variants)
 			{
-				if(typeof options['matchRegexp'] == 'function')
-					var regexp = options['matchRegexp'](value, escapeRegExp);
-				else
-					var regexp = RegExp(escapeRegExp(value), 'i');
-
-
+				var regexp = options['matchRegexp'](value, escapeRegExp);
 				var fullregexp = RegExp('^'+escapeRegExp(value)+'$', regexp.flags);
-
 				var i = 0;
 				variants.filter(function(item, itemIndex)
 				{
@@ -379,5 +373,3 @@
 		}); // end each
 	};
 }(jQuery));
-
-

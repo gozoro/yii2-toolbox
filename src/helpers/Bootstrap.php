@@ -183,7 +183,10 @@ class Bootstrap extends Html
 					</div>
 
 				<script>
+					$(document).ready(function()
+					{
 						$("#'.$id.'").parent().datepicker('.$jsOptions.');
+					});
 				</script>';
 		}
 		elseif(is_array($name) and isset($name[0]) and isset($name[1]))

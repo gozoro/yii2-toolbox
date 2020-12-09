@@ -56,13 +56,14 @@ class Bootstrap extends Html
 	 *   - 'autoclose'      => true,
 	 *   - 'todayHighlight' => true,
 	 *
-	 *   - 'maxlength'   => 10,
-	 *   - 'readonly'    => false,
-	 *   - 'pickonly'    => false,
-	 *   - 'disabled'    => false,
-	 *   - 'class'       => false,
-	 *   - 'style'       => false,
-	 *   - 'placeholder' => false,
+	 *   - 'maxlength'    => 10,
+	 *   - 'readonly'     => false,
+	 *   - 'pickonly'     => false,
+	 *   - 'disabled'     => false,
+	 *   - 'class'        => false,
+	 *   - 'style'        => false,
+	 *   - 'placeholder'  => false,
+	 *   - 'autocomplete' => null,
 	 *
 	 * @param string|array $name element name and element id  (if "Form[date]" then id="Form-date"). Array for daterange.
 	 * @param string|array $value value in format dd.mm.yyyy. Array for daterange.
@@ -82,13 +83,14 @@ class Bootstrap extends Html
 				'autoclose'      => true,
 				'todayHighlight' => true,
 
-				'maxlength'   => 10,
-				'readonly'    => false,
-				'pickonly'    => false,
-				'disabled'    => false,
-				'class'       => false,
-				'style'       => false,
-				'placeholder' => false,
+				'maxlength'    => 10,
+				'readonly'     => false,
+				'pickonly'     => false,
+				'disabled'     => false,
+				'class'        => false,
+				'style'        => false,
+				'placeholder'  => false,
+				'autocomplete' => null,
 			];
 
 		if(!is_null($options) and is_array($options))
@@ -128,13 +130,24 @@ class Bootstrap extends Html
 		}
 
 
-
-
-
 		if(isset($defaultOptions['placeholder']) and $defaultOptions['placeholder'])
 			$placeholder = 'placeholder="'.self::encode($defaultOptions['placeholder']).'"';
 		else
 			$placeholder = '';
+
+		if(empty($defaultOptions['autocomplete']))
+		{
+			$autocomplete = '';
+		}
+		else
+		{
+			if(is_string( $defaultOptions['autocomplete'] ))
+				$autocomplete = 'autocomplete="'.self::encode($defaultOptions['autocomplete']).'"';
+			elseif($defaultOptions['autocomplete'])
+				$autocomplete = 'autocomplete="on"';
+			else
+				$autocomplete = 'autocomplete="off"';
+		}
 
 
 		if(isset($defaultOptions['class']) and $defaultOptions['class'])
@@ -148,37 +161,10 @@ class Bootstrap extends Html
 			$style = '';
 
 
-		unset($defaultOptions['maxlength'], $defaultOptions['readonly'], $defaultOptions['pickonly'], $defaultOptions['disabled'], $defaultOptions['placeholder'], $defaultOptions['class'], $defaultOptions['style']);
-
-
-
-//		$jsOptions = [];
-//		foreach($defaultOptions as $key => $val)
-//		{
-//			if(is_bool($val))
-//			{
-//				if($val)
-//					$jsOptions[$key] = $key.':true';
-//				else
-//					$jsOptions[$key] = $key.':false';
-//			}
-//			elseif(is_int($val) or (is_string($val) and preg_match('/^function/i', $val)))
-//			{
-//				$jsOptions[$key] = $key.':'.$val;
-//			}
-//			elseif(is_array($val))
-//			{
-//				$jsOptions[$key] = $key.':'.json_encode($val);
-//			}
-//			else // string
-//			{
-//				$jsOptions[$key] = $key.':"'.$val.'"';
-//			}
-//		}
+		unset($defaultOptions['maxlength'], $defaultOptions['readonly'], $defaultOptions['pickonly'], $defaultOptions['disabled'],
+			$defaultOptions['placeholder'], $defaultOptions['class'], $defaultOptions['style'], $defaultOptions['autocomplete']);
 
 		$jsOptions = self::phpOptions2jsOptions($defaultOptions);
-
-
 
 		if(is_string($name))
 		{
@@ -192,7 +178,7 @@ class Bootstrap extends Html
 			}
 
 			$html = '<div class="input-group date">
-						<input type="text" class="form-control '.$class.'" '.$style.' id="'.$id.'" name="'.$name.'" value="'.self::encode($value).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' />
+						<input type="text" class="form-control '.$class.'" '.$style.' id="'.$id.'" name="'.$name.'" value="'.self::encode($value).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' '.$autocomplete.' />
 						<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
 					</div>
 
@@ -221,9 +207,9 @@ class Bootstrap extends Html
 			}
 
 			$html = '<div class="input-daterange input-group" id="datepicker">
-						<input type="text" class="input-sm form-control '.$class.'" '.$style.' id="'.$id[0].'" name="'.$name[0].'" value="'.self::encode($value[0]).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' />
+						<input type="text" class="input-sm form-control '.$class.'" '.$style.' id="'.$id[0].'" name="'.$name[0].'" value="'.self::encode($value[0]).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' '.$autocomplete.' />
 						<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-						<input type="text" class="input-sm form-control '.$class.'" '.$style.' id="'.$id[1].'" name="'.$name[1].'" value="'.self::encode($value[1]).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' />
+						<input type="text" class="input-sm form-control '.$class.'" '.$style.' id="'.$id[1].'" name="'.$name[1].'" value="'.self::encode($value[1]).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' '.$autocomplete.' />
 					</div>
 					<script>
 						$(document).ready(function()
@@ -283,12 +269,23 @@ class Bootstrap extends Html
 	 *
 	 * Default options:
 	 *
-	 * - maxResults  => 0,   // maximum number of suggestions (0 - no limits)
-	 * - minChars    => 1,   // minimum number of characters for the suggestions
-	 * - timeout     => 500, // keyboard input timeout
+	 * - maxResults  => 0,   // maximum number of suggestions (0 - no limits).
+	 * - minChars    => 1,   // minimum number of characters for the suggestions.
+	 * - timeout     => 500, // keyboard input timeout.
+	 * - matchRegexp => 'function(value, escape){return RegExp(escape(value), 'i')}', // function returns a regexp-object used for filtering.
+	 * - matchValue  => 'function(item, index){return item;}', // function returns a value used for filtering.
+	 * - itemDisplay => 'function(item, index){return item;}', // function returns a value used for display a suggestions.
+	 * - itemValue   => null,                                  // you can set a function returns a value for the request (the default value is matchValue).
+	 * - emptyValue  => ''                                     // empty value when itemValue is used.
 	 *
-	 *
-	 *
+	 * - 'maxlength'   => false,
+	 * - 'readonly'    => false,
+	 * - 'pickonly'    => false,
+	 * - 'disabled'    => false,
+	 * - 'class'       => false,
+	 * - 'style'       => false,
+	 * - 'placeholder' => false,
+	 * - 'autocomplete' => 'off',
 	 *
 	 *
 	 * @param string $name element name and element id  (if "Form[name]" then id="Form-name").
@@ -308,6 +305,7 @@ class Bootstrap extends Html
 				'class'       => false,
 				'style'       => false,
 				'placeholder' => false,
+				'autocomplete'=> 'off'
 		];
 
 
@@ -341,6 +339,19 @@ class Bootstrap extends Html
 		else
 			$placeholder = '';
 
+		if(empty($defaultOptions['autocomplete']))
+		{
+			$autocomplete = '';
+		}
+		else
+		{
+			if(is_string( $defaultOptions['autocomplete'] ))
+				$autocomplete = 'autocomplete="'.self::encode($defaultOptions['autocomplete']).'"';
+			elseif($defaultOptions['autocomplete'])
+				$autocomplete = 'autocomplete="on"';
+			else
+				$autocomplete = 'autocomplete="off"';
+		}
 
 		if(isset($defaultOptions['class']) and $defaultOptions['class'])
 			$class = $defaultOptions['class'];
@@ -353,7 +364,8 @@ class Bootstrap extends Html
 			$style = '';
 
 
-		unset($defaultOptions['maxlength'], $defaultOptions['readonly'], $defaultOptions['disabled'], $defaultOptions['placeholder'], $defaultOptions['class'], $defaultOptions['style']);
+		unset($defaultOptions['maxlength'], $defaultOptions['readonly'], $defaultOptions['disabled'],
+			  $defaultOptions['placeholder'], $defaultOptions['class'], $defaultOptions['style'], $defaultOptions['autocomplete']);
 
 
 
@@ -385,14 +397,12 @@ class Bootstrap extends Html
 
 
 		return
-		'<input id="'.$id.'" name="'.$name.'" type="text" class="form-control autocompleter '.$class.'" '.$style.' value="'.self::encode($value).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' autocomplete="off">
+		'<input id="'.$id.'" name="'.$name.'" type="text" class="form-control autocompleter '.$class.'" '.$style.' value="'.self::encode($value).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' '.$autocomplete.' />
 		<script>
-
 			$(document).ready(function()
 			{
 				$("#'.$id.'").autocompleter('.$jsVariants.', '.$jsOptions.' );
 			});
-
 		</script>';
 	}
 }

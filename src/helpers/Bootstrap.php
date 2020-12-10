@@ -280,6 +280,7 @@ class Bootstrap extends Html
 	 * - itemDisplay => 'function(item, index){return item;}', // function returns a value used for display a suggestions.
 	 * - itemValue   => null,                                  // you can set a function returns a value for the request (the default value is matchValue).
 	 * - emptyValue  => ''                                     // empty value when itemValue is used.
+	 * - ajaxData    => 'function(value){return {value:value};}', // function returns default ajax-request data
 	 *
 	 * - 'maxlength'   => false,
 	 * - 'readonly'    => false,

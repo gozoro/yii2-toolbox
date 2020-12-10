@@ -1,7 +1,7 @@
 {
 	"name": "gozoro/yii2-toolbox",
 	"description": "Additional classes for project development.",
-	"keywords":["yii2","toolbox", "helpers"],
+	"keywords":["yii2", "toolbox", "helpers"],
 	"homepage": "https://github.com/gozoro/yii2-toolbox",
 	"type": "yii2-extension",
 	"license": "MIT",
@@ -18,6 +18,7 @@
 		"bower-asset/jquery": "~1.12",
 		"gozoro/yii2-preview": "~0.1.0",
 		"gozoro/jquery-ajaxform": "~0.0.1",
+		"gozoro/jquery-autocompleter": "~1.0.0",
 		"gozoro/bootstrap-sidebar": "~1.0.0",
 		"gozoro/bootstrap3-plus": "~0.0.1"
 	},

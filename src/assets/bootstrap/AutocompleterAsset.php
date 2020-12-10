@@ -11,14 +11,13 @@ use yii\web\AssetBundle;
 class AutocompleterAsset extends AssetBundle
 {
 
-	public $sourcePath = '@vendor/gozoro/yii2-toolbox/src/resources/bootstrap/autocompleter';
-
+	public $sourcePath = '@vendor/gozoro/jquery-autocompleter/src';
 	public $js = [
-		'js/autocompleter.min.js',
+		'js/jquery.autocompleter.min.js',
 	];
 
 	public $css = [
-		'css/autocompleter.min.css'
+		'css/jquery.autocompleter.min.css'
 	];
 
 	public $jsOptions = ['position'=>\yii\web\view::POS_HEAD];

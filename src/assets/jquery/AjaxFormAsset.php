@@ -11,14 +11,14 @@ use yii\web\AssetBundle;
 class AjaxFormAsset extends AssetBundle
 {
 
-    public $sourcePath = '@vendor/gozoro/jquery-ajaxform/dist';
+    public $sourcePath = '@vendor/gozoro/jquery-ajaxform/src';
 
 	public $css = [
 
     ];
 
     public $js = [
-		'jquery.ajaxform.min.js',
+		'js/jquery.ajaxform.min.js',
     ];
 
 	public $jsOptions = ['position'=>\yii\web\view::POS_HEAD];

@@ -17,7 +17,7 @@
 		"bower-asset/bootstrap-datepicker": "^1.7",
 		"bower-asset/jquery": "~1.12",
 		"gozoro/yii2-preview": "~0.1.0",
-		"gozoro/jquery-ajaxform": "~0.0.1",
+		"gozoro/jquery-ajaxform": "~1.0.0",
 		"gozoro/jquery-autocompleter": "~1.0.0",
 		"gozoro/bootstrap-sidebar": "~1.0.0",
 		"gozoro/bootstrap3-plus": "~0.0.1"

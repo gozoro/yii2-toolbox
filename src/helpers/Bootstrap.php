@@ -276,11 +276,13 @@ class Bootstrap extends Html
 	 * - minChars    => 1,   // minimum number of characters for the suggestions.
 	 * - timeout     => 500, // keyboard input timeout.
 	 * - matchRegexp => 'function(value, escape){return RegExp(escape(value), 'i')}', // function returns a regexp-object used for filtering.
-	 * - matchValue  => 'function(item, index){return item;}', // function returns a value used for filtering.
-	 * - itemDisplay => 'function(item, index){return item;}', // function returns a value used for display a suggestions.
-	 * - itemValue   => null,                                  // you can set a function returns a value for the request (the default value is matchValue).
-	 * - emptyValue  => ''                                     // empty value when itemValue is used.
-	 * - ajaxData    => 'function(value){return {value:value};}', // function returns default ajax-request data
+	 * - matchValue  => 'function(item, index){return item;}',                        // function returns a value used for filtering.
+	 * - itemDisplay => 'function(item, index){return item;}',                        // function returns a value used for display a suggestions.
+	 * - itemValue   => null,                                                         // you can set a function returns a value for the request
+	 *                                                                                // (the default value is matchValue).
+	 * - emptyValue  => ''                                                            // empty value when itemValue is used.
+	 * - ajaxData    => 'function(value){return {value:value};}',                     // function returns default ajax-request data
+	 * - hiddenValue => '',                                                           // default value for the hidden input
 	 *
 	 * - 'maxlength'   => false,
 	 * - 'readonly'    => false,

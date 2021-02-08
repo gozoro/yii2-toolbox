@@ -1,7 +1,7 @@
 <?php
 
 
-namespace gozoro\toolbox\assets\bootstrap;
+namespace gozoro\toolbox\assets;
 
 use yii\web\AssetBundle;
 

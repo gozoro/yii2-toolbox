@@ -1,7 +1,7 @@
 <?php
 
 
-namespace gozoro\toolbox\assets\jquery;
+namespace gozoro\toolbox\assets;
 
 use yii\web\AssetBundle;
 

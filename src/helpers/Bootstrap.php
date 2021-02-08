@@ -5,9 +5,9 @@ namespace gozoro\toolbox\helpers;
 
 use Yii;
 use gozoro\toolbox\helpers\Html;
-use gozoro\toolbox\assets\bootstrap\DatepickerAsset;
-use gozoro\toolbox\assets\bootstrap\ButtonUploadAsset;
-use gozoro\toolbox\assets\bootstrap\AutocompleterAsset;
+use gozoro\toolbox\assets\DatepickerAsset;
+use gozoro\toolbox\assets\ButtonUploadAsset;
+use gozoro\toolbox\assets\AutocompleterAsset;
 
 /**
  * Bootstrap 3 HTML helpers

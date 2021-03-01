@@ -62,8 +62,6 @@ abstract class Controller extends \yii\web\Controller
 				]);
 	}
 
-
-
 	/**
 	 * Sets text of flash-message after succes action.
 	 *
@@ -95,8 +93,17 @@ abstract class Controller extends \yii\web\Controller
 	 */
 	public function renderJson($responseArr)
 	{
-		\Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-		return $responseArr;
+		return $this->asJson($responseArr);
+	}
+
+	/**
+	 * Sets response format \yii\web\Response::FORMAT_XML;
+	 * @param array $responseArr
+	 * @return array
+	 */
+	public function renderXml($responseArr)
+	{
+		return $this->asXml($responseArr);
 	}
 
 	/**

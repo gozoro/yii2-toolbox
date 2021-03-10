@@ -7,6 +7,7 @@ use yii\web\AssetBundle;
 
 /**
  * Bootstrap 3 button upload asset
+ * @deprecated since 2021.03.10
  */
 class ButtonUploadAsset extends AssetBundle
 {

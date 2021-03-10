@@ -25,6 +25,7 @@ class Bootstrap extends Html
 	 * @param array $options the tag options in terms of name-value pairs. These will be rendered as
      * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
 	 * @return string the generated file input tag
+	 * @deprecated since 2021.03.10
 	 */
 	static function buttonUpload($name, $label = "Upload", $options = [])
 	{

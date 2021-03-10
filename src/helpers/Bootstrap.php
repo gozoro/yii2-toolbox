@@ -428,24 +428,21 @@ class Bootstrap extends Html
 	 * See [[renderTagAttributes()]] for details on how attributes are being rendered.
 	 *
 	 *
-	 * Default options:<br />
-	 * $options = [<br />
-	 * 'style' => '',<br />
-	 * 'class' => 'btn btn-default',<br />
-	 * 'data-selected-class' => 'btn btn-success',<br />
-	 * 'data-icon-class' => 'glyphicon glyphicon-paperclip',<br />
-	 * 'label' => 'Attach a file',<br />
-	 * ];
+	 * Default options:
 	 *
+	 * - 'id' => uniqid($name),
+	 * - 'style' => '',
+	 * - 'class' => 'btn btn-default',
+	 * - 'data-selected-class' => 'btn btn-success',
+	 * - 'data-icon-class' => 'glyphicon glyphicon-paperclip',
+	 * - 'label' => 'Attach a file',
 	 *
 	 * @return string the generated file input tag
 	 */
 	static function fileInput($name, $value = null, $options = [])
 	{
-		$id          = $name;
-		$containerId = uniqid($name);
-
 		$defaultOptions = [
+			'id' => uniqid('file'),
 			'style' => '',
 			'class' => 'btn btn-default',
 			'data-selected-class' => 'btn btn-success',
@@ -455,30 +452,33 @@ class Bootstrap extends Html
 
 		$options = array_merge($defaultOptions, $options);
 
+		$id       = $options['id'];
 		$class    = $options['class'];
 		$style    = $options['style'];
 		$selClass = $options['data-selected-class'];
 		$icon     = $options['data-icon-class'];
 		$label    = $options['label'];
 
-		unset($options['class'], $options['style'], $options['label'], $options['data-selected-class'], $options['data-icon-class']);
+		unset($options['id'], $options['class'], $options['style'], $options['label'], $options['data-selected-class'], $options['data-icon-class']);
+
+		$containerId = uniqid('file');
 
 		$html = '<style>'
 			. '#'.$containerId.'{position:relative;}'
 			. '#'.$id.'{position:relative;overflow:hidden;}'
 			. '#'.$id.' input[type=file]{position:absolute;top:0;right:0;filter:alpha(opacity=0);opacity:0;min-width:100%;min-height:100%;}'
-			. '#'.$id.' + span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:block; position:absolute; left:0; top:0; right:30px;}'
+			. '#'.$id.' + span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:block;position:absolute;left:0;top:0;right:30px;}'
 			. '</style>'
 			. '<div id="'.$containerId.'">'
-			. '<button id="'.$id.'" class="'.static::encode($class).'" style="'.static::encode($style).'" type="button">'
+			. '<button id="'.static::encode($id).'" class="'.static::encode($class).'" style="'.static::encode($style).'" type="button">'
 			. '<span class="'.static::encode($icon).'"></span> '.static::encode($label).' '
 			. '<span class="badge"></span>'. parent::fileInput($name, null, $options).'</button><span></span>'
 			. '</div>'
 			. '<script>
 			$(document).ready(function()
 			{
-				var $btn  = $("#'.$id.'");
-				var $span = $("#'.$id.' + span");
+				var $btn  = $("#'.static::encode($id).'");
+				var $span = $("#'.static::encode($id).' + span");
 
 				$btn.parents("form").on("reset", function()
 				{
@@ -486,11 +486,10 @@ class Bootstrap extends Html
 					$span.attr("title", "").html("");
 				});
 
-				$(document).on("change", "#'.$id.' :file", function()
+				$(document).on("change", "#'.static::encode($id).' :file", function()
 				{
-					var $input = $(this);
-					var countFiles = $input.get(0).files ? $input.get(0).files.length : 1;
-					var files = $input.get(0).files;
+					var files = $(this).get(0).files;
+					var countFiles = files ? files.length : 1;
 					var fileNames = [], i;
 
 					for(i=0; i<countFiles; i++)

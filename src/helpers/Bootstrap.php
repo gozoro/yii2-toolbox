@@ -412,4 +412,99 @@ class Bootstrap extends Html
 			});
 		</script>';
 	}
+
+
+	/**
+	 *
+	 * Generates a file input field.
+	 * To use a file input field, you should set the enclosing form's "enctype" attribute to
+	 * be "multipart/form-data". After the form is submitted, the uploaded file information
+	 * can be obtained via $_FILES[$name] (see PHP documentation).
+	 * @param string $name the name attribute.
+	 * @param string|null $value the value attribute. If it is null, the value attribute will not be generated.
+	 * @param array $options the tag options in terms of name-value pairs. These will be rendered as
+	 * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+	 * If a value is null, the corresponding attribute will not be rendered.
+	 * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+	 *
+	 *
+	 * Default options:<br />
+	 * $options = [<br />
+	 * 'style' => '',<br />
+	 * 'class' => 'btn btn-default',<br />
+	 * 'data-selected-class' => 'btn btn-success',<br />
+	 * 'data-icon-class' => 'glyphicon glyphicon-paperclip',<br />
+	 * 'label' => 'Attach a file',<br />
+	 * ];
+	 *
+	 *
+	 * @return string the generated file input tag
+	 */
+	static function fileInput($name, $value = null, $options = [])
+	{
+		$id          = $name;
+		$containerId = uniqid($name);
+
+		$defaultOptions = [
+			'style' => '',
+			'class' => 'btn btn-default',
+			'data-selected-class' => 'btn btn-success',
+			'data-icon-class' => 'glyphicon glyphicon-paperclip',
+			'label' => (Yii::$app->language == 'ru-RU') ? 'Прикрепить' : 'Attach a file',
+		];
+
+		$options = array_merge($defaultOptions, $options);
+
+		$class    = $options['class'];
+		$style    = $options['style'];
+		$selClass = $options['data-selected-class'];
+		$icon     = $options['data-icon-class'];
+		$label    = $options['label'];
+
+		unset($options['class'], $options['style'], $options['label'], $options['data-selected-class'], $options['data-icon-class']);
+
+		$html = '<style>'
+			. '#'.$containerId.'{position:relative;}'
+			. '#'.$id.'{position:relative;overflow:hidden;}'
+			. '#'.$id.' input[type=file]{position:absolute;top:0;right:0;filter:alpha(opacity=0);opacity:0;min-width:100%;min-height:100%;}'
+			. '#'.$id.' + span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:block; position:absolute; left:0; top:0; right:30px;}'
+			. '</style>'
+			. '<div id="'.$containerId.'">'
+			. '<button id="'.$id.'" class="'.static::encode($class).'" style="'.static::encode($style).'" type="button">'
+			. '<span class="'.static::encode($icon).'"></span> '.static::encode($label).' '
+			. '<span class="badge"></span>'. parent::fileInput($name, null, $options).'</button><span></span>'
+			. '</div>'
+			. '<script>
+			$(document).ready(function()
+			{
+				var $btn  = $("#'.$id.'");
+				var $span = $("#'.$id.' + span");
+
+				$btn.parents("form").on("reset", function()
+				{
+					$btn.attr("class", "'.static::encode($class).'").find("span.badge").html("");
+					$span.attr("title", "").html("");
+				});
+
+				$(document).on("change", "#'.$id.' :file", function()
+				{
+					var $input = $(this);
+					var countFiles = $input.get(0).files ? $input.get(0).files.length : 1;
+					var files = $input.get(0).files;
+					var fileNames = [], i;
+
+					for(i=0; i<countFiles; i++)
+					{
+						fileNames.push( files[i].name );
+					}
+
+					var selectedFiles = fileNames.join(",\n");
+					$btn.attr("class", "'.static::encode($selClass).'").find("span.badge").html(countFiles);
+					$span.attr("title", selectedFiles).html(selectedFiles).css("left", $btn.outerWidth() + 15 );
+				});
+			});
+			</script>';
+
+		return $html;
+	}
 }

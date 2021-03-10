@@ -415,7 +415,6 @@ class Bootstrap extends Html
 
 
 	/**
-	 *
 	 * Generates a file input field.
 	 * To use a file input field, you should set the enclosing form's "enctype" attribute to
 	 * be "multipart/form-data". After the form is submitted, the uploaded file information
@@ -428,14 +427,15 @@ class Bootstrap extends Html
 	 * See [[renderTagAttributes()]] for details on how attributes are being rendered.
 	 *
 	 *
-	 * Default options:
+	 * Default options:<br />
+	 * $options = [<br />
+	 * 'id' => uniqid($name),<br />
+	 * 'class' => 'btn btn-default',<br />
+	 * 'data-selected-class' => 'btn btn-success',<br />
+	 * 'data-icon-class' => 'glyphicon glyphicon-paperclip',<br />
+	 * 'label' => 'Attach a file',<br />
+	 * ];
 	 *
-	 * - 'id' => uniqid($name),
-	 * - 'style' => '',
-	 * - 'class' => 'btn btn-default',
-	 * - 'data-selected-class' => 'btn btn-success',
-	 * - 'data-icon-class' => 'glyphicon glyphicon-paperclip',
-	 * - 'label' => 'Attach a file',
 	 *
 	 * @return string the generated file input tag
 	 */
@@ -443,18 +443,27 @@ class Bootstrap extends Html
 	{
 		$defaultOptions = [
 			'id' => uniqid('file'),
-			'style' => '',
+			'style' => null,
 			'class' => 'btn btn-default',
 			'data-selected-class' => 'btn btn-success',
 			'data-icon-class' => 'glyphicon glyphicon-paperclip',
 			'label' => (Yii::$app->language == 'ru-RU') ? 'Прикрепить' : 'Attach a file',
+			'disabled' => false,
 		];
 
 		$options = array_merge($defaultOptions, $options);
 
+		$btnAttributes = [
+			'id' => $options['id'],
+			'style' => $options['style'],
+			'class' => $options['class'],
+			'disabled' => $options['disabled'],
+			'type' => 'button',
+		];
+
+
 		$id       = $options['id'];
 		$class    = $options['class'];
-		$style    = $options['style'];
 		$selClass = $options['data-selected-class'];
 		$icon     = $options['data-icon-class'];
 		$label    = $options['label'];
@@ -470,7 +479,7 @@ class Bootstrap extends Html
 			. '#'.$id.' + span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:block;position:absolute;left:0;top:0;right:30px;}'
 			. '</style>'
 			. '<div id="'.$containerId.'">'
-			. '<button id="'.static::encode($id).'" class="'.static::encode($class).'" style="'.static::encode($style).'" type="button">'
+			. '<button '.static::renderTagAttributes($btnAttributes).'>'
 			. '<span class="'.static::encode($icon).'"></span> '.static::encode($label).' '
 			. '<span class="badge"></span>'. parent::fileInput($name, null, $options).'</button><span></span>'
 			. '</div>'
@@ -499,7 +508,7 @@ class Bootstrap extends Html
 
 					var selectedFiles = fileNames.join(",\n");
 					$btn.attr("class", "'.static::encode($selClass).'").find("span.badge").html(countFiles);
-					$span.attr("title", selectedFiles).html(selectedFiles).css("left", $btn.outerWidth() + 15 );
+					$span.attr("title", selectedFiles).html(selectedFiles).css("left", $btn.outerWidth() + 5 );
 				});
 			});
 			</script>';

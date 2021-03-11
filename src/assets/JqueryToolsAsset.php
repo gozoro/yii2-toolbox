@@ -7,7 +7,6 @@ use yii\web\AssetBundle;
 
 /**
  * Jquery tools asset
- * @deprecated since 2021.03.11
  */
 class JqueryToolsAsset extends AssetBundle
 {

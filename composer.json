@@ -15,6 +15,7 @@
 		"php": ">=5.5.9",
 		"yiisoft/yii2": "~2.0.0",
 		"bower-asset/jquery": "~1.12",
+		"blueimp/jquery-file-upload": "~10.31.0",
 		"bower-asset/bootstrap-datepicker": "^1.7",
 		"gozoro/jquery-ajaxform": "~1.0.0",
 		"gozoro/jquery-autocompleter": "~1.0.0",

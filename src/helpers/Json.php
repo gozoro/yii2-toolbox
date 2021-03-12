@@ -2,7 +2,7 @@
 
 namespace gozoro\toolbox\helpers;
 
-
+use yii\helpers\ArrayHelper;
 
 /**
  * Json helper
@@ -11,7 +11,7 @@ class Json extends \yii\helpers\Json
 {
 
 	/**
-	 * Encodes the given uptions into a JSON string.
+	 * Encodes the given options into a JSON string.
 	 *
 	 * @param array $options
 	 * @return string
@@ -26,7 +26,7 @@ class Json extends \yii\helpers\Json
 			{
 				$jsOptions[$key] = $key.':'.$val;
 			}
-			elseif(yii\helpers\ArrayHelper::isAssociative($val))
+			elseif(ArrayHelper::isAssociative($val))
 			{
 				$jsOptions[$key] = $key.':'.static::optionsEncode($val);
 			}

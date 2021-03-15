@@ -8,6 +8,7 @@ use gozoro\toolbox\helpers\Html;
 use gozoro\toolbox\assets\DatepickerAsset;
 use gozoro\toolbox\assets\ButtonUploadAsset;
 use gozoro\toolbox\assets\AutocompleterAsset;
+use yii\helpers\ArrayHelper;
 
 /**
  * Bootstrap 3 HTML helpers
@@ -427,90 +428,98 @@ class Bootstrap extends Html
 	 * See [[renderTagAttributes()]] for details on how attributes are being rendered.
 	 *
 	 *
-	 * Default options:<br />
-	 * $options = [<br />
-	 * 'id' => uniqid($name),<br />
-	 * 'class' => 'btn btn-default',<br />
-	 * 'data-selected-class' => 'btn btn-success',<br />
-	 * 'data-icon-class' => 'glyphicon glyphicon-paperclip',<br />
-	 * 'label' => 'Attach a file',<br />
-	 * ];
-	 *
+	 * Default options:
+	 * - 'id' => uniqid($name),
+	 * - 'class' => 'btn btn-default',
+	 * - 'data-selected-class' => 'btn btn-success',
+	 * - 'content' => 'Attach a file',
+	 * - 'multiple' => false,
+	 * - 'accept' => ''
+	 * - input => [class=>'file-input-hidden', id=uniqid()]
+	 * - filearea => [class=>'file-input-filearea', id=uniqid()]
 	 *
 	 * @return string the generated file input tag
 	 */
 	static function fileInput($name, $value = null, $options = [])
 	{
+		FileUploaderAsset::register( Yii::$app->view );
+
+		$label = (Yii::$app->language == 'ru-RU') ? 'Прикрепить' : 'Attach a file';
+
 		$defaultOptions = [
-			'id' => uniqid('file'),
-			'style' => null,
-			'class' => 'btn btn-default',
+			'id'       => uniqid('btn'),
+			'class'    => 'btn btn-default',
 			'data-selected-class' => 'btn btn-success',
-			'data-icon-class' => 'glyphicon glyphicon-paperclip',
-			'label' => (Yii::$app->language == 'ru-RU') ? 'Прикрепить' : 'Attach a file',
-			'disabled' => false,
-		];
-
-		$options = array_merge($defaultOptions, $options);
-
-		$btnAttributes = [
-			'id' => $options['id'],
-			'style' => $options['style'],
-			'class' => $options['class'],
-			'disabled' => $options['disabled'],
+			'content'  => '<i class="glyphicon glyphicon-paperclip"></i> '.$label.' <span class="badge"></span>',
 			'type' => 'button',
+
+			'input'    => ['id'=> uniqid('input'), 'class'=>'file-input-hidden'],
+			'filearea' => ['id'=> uniqid('filearea') , 'class'=> 'file-input-filearea'],
 		];
 
 
-		$id       = $options['id'];
-		$class    = $options['class'];
-		$selClass = $options['data-selected-class'];
-		$icon     = $options['data-icon-class'];
-		$label    = $options['label'];
+		$options = ArrayHelper::merge($defaultOptions, $options);
 
-		unset($options['id'], $options['class'], $options['style'], $options['label'], $options['data-selected-class'], $options['data-icon-class']);
+		$inputId    = $options['input']['id'];
+		$buttonId   = $options['id'];
+		$fileareaId = $options['filearea']['id'];
+		$content    = $options['content'];
+		$class      = $options['class'];
 
-		$containerId = uniqid('file');
+		$inputAttr    = $options['input'];
+		$fileareaAttr = $options['filearea'];
 
-		$html = '<style>'
-			. '#'.$containerId.'{position:relative;}'
-			. '#'.$id.'{position:relative;overflow:hidden;}'
-			. '#'.$id.' input[type=file]{position:absolute;top:0;right:0;filter:alpha(opacity=0);opacity:0;min-width:100%;min-height:100%;}'
-			. '#'.$id.' + span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:block;position:absolute;left:0;top:0;right:30px;}'
-			. '</style>'
-			. '<div id="'.$containerId.'">'
-			. '<button '.static::renderTagAttributes($btnAttributes).'>'
-			. '<span class="'.static::encode($icon).'"></span> '.static::encode($label).' '
-			. '<span class="badge"></span>'. parent::fileInput($name, null, $options).'</button><span></span>'
-			. '</div>'
+		if(isset($options['multiple']) and !isset($inputAttr['multiple'])) $inputAttr['multiple'] = $options['multiple'];
+		if(isset($options['accept']) and !isset($inputAttr['accept']))   $inputAttr['accept'] = $options['accept'];
+		unset($options['input'], $options['filearea'], $options['content'], $options['multiple'], $options['accept']);
+
+		$btnAttr = $options;
+
+
+		$html = Html::fileInput($name, $value, $inputAttr);
+		$html .= '<button '.static::renderTagAttributes($btnAttr).'>'.$content.'</button>'
+			. '<filearea '.static::renderTagAttributes($fileareaAttr).'></filearea>'
 			. '<script>
-			$(document).ready(function()
-			{
-				var $btn  = $("#'.static::encode($id).'");
-				var $span = $("#'.static::encode($id).' + span");
-
-				$btn.parents("form").on("reset", function()
+				$(document).ready(function()
 				{
-					$btn.attr("class", "'.static::encode($class).'").find("span.badge").html("");
-					$span.attr("title", "").html("");
-				});
+					var $btn   = $("#'.static::encode($buttonId).'");
+					var $list  = $("#'.static::encode($fileareaId).'");
+					var $input = $("#'.static::encode($inputId).'");
 
-				$(document).on("change", "#'.static::encode($id).' :file", function()
-				{
-					var files = $(this).get(0).files;
-					var countFiles = files ? files.length : 1;
-					var fileNames = [], i;
+					$list.css("height", $btn.outerHeight());
 
-					for(i=0; i<countFiles; i++)
+					$input.change(function()
 					{
-						fileNames.push( files[i].name );
-					}
+						$btn.change();
+					});
 
-					var selectedFiles = fileNames.join(",\n");
-					$btn.attr("class", "'.static::encode($selClass).'").find("span.badge").html(countFiles);
-					$span.attr("title", selectedFiles).html(selectedFiles).css("left", $btn.outerWidth() + 5 );
+					$btn.click(function()
+					{
+						$input.click();
+					})
+					.change(function()
+					{
+						var files = $input.get(0).files;
+						var countFiles = files ? files.length : 1;
+						var fileNames = [], i;
+
+						for(i=0; i<countFiles; i++)
+						{
+							fileNames.push( files[i].name );
+						}
+
+						var selectedFiles = fileNames.join(",\n");
+						var selClass = $btn.data("selected-class");
+
+						$btn.css("float", "left").attr("class", selClass).attr("title", selectedFiles).find(".badge").html(countFiles);
+						$list.css("height", $btn.outerHeight()).attr("title", selectedFiles).html(selectedFiles);
+					})
+					.parents("form").on("reset", function()
+					{
+						$btn.attr("class", "'.static::encode($class).'").find(".badge").html("");
+						$list.attr("title", "").html("");
+					});
 				});
-			});
 			</script>';
 
 		return $html;

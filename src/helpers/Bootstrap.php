@@ -477,8 +477,9 @@ class Bootstrap extends Html
 		$btnAttr = $options;
 
 
-		$html = Html::fileInput($name, $value, $inputAttr);
-		$html .= '<div><button '.static::renderTagAttributes($btnAttr).'>'.$content.'</button>'
+		$html = '<div>'
+			. Html::fileInput($name, $value, $inputAttr)
+			. '<button '.static::renderTagAttributes($btnAttr).'>'.$content.'</button>'
 			. '<filearea '.static::renderTagAttributes($fileareaAttr).'></filearea></div>'
 			. '<script>
 				$(document).ready(function()
@@ -486,8 +487,6 @@ class Bootstrap extends Html
 					var $btn   = $("#'.static::encode($buttonId).'");
 					var $list  = $("#'.static::encode($fileareaId).'");
 					var $input = $("#'.static::encode($inputId).'");
-
-					$list.css("height", $btn.outerHeight());
 
 					$input.change(function()
 					{
@@ -512,8 +511,8 @@ class Bootstrap extends Html
 						var selectedFiles = fileNames.join(",\n");
 						var selClass = $btn.data("selected-class");
 
-						$btn.css("float", "left").attr("class", selClass).attr("title", selectedFiles).find(".badge").html(countFiles);
-						$list.css("height", $btn.outerHeight()).attr("title", selectedFiles).html(selectedFiles);
+						$btn.attr("class", selClass).attr("title", selectedFiles).find(".badge").html(countFiles);
+						$list.attr("title", selectedFiles).html(selectedFiles);
 					})
 					.parents("form").on("reset", function()
 					{

@@ -13,16 +13,16 @@
 	z-index: -1;
 
 }
-.file-input-hidden + button{display: block; float: left;}
+
 .file-input-filearea{
-	display: block;
+	display: inline-block;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	max-width: 50%;
 	padding-left: 5px;
+	line-height: 1em;
 }
-
 
 .file-uploader > div{padding-top:10px;}
 .file-uploader .file {width: 100%; position: relative; margin-bottom:10px;}

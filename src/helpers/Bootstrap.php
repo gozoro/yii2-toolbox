@@ -430,14 +430,14 @@ class Bootstrap extends Html
 	 *
 	 *
 	 * Default options:
-	 * - 'id' => uniqid($name),
+	 * - 'id' => $name, // Important! "file[]" replace to "file", "file[video]" replace to "file-video"
 	 * - 'class' => 'btn btn-default',
 	 * - 'data-selected-class' => 'btn btn-success',
 	 * - 'content' => 'Attach a file',
 	 * - 'multiple' => false,
 	 * - 'accept' => ''
-	 * - input => [class=>'file-input-hidden', id=uniqid()]
-	 * - filearea => [class=>'file-input-filearea', id=uniqid()]
+	 * - input => [class=>'file-input-hidden', id=uniqid()] // hidden input file tag
+	 * - filearea => [class=>'file-input-filearea', id=uniqid()] // tag with file names
 	 *
 	 * @return string the generated file input tag
 	 */
@@ -448,7 +448,7 @@ class Bootstrap extends Html
 		$label = (Yii::$app->language == 'ru-RU') ? 'Прикрепить' : 'Attach a file';
 
 		$defaultOptions = [
-			'id'       => uniqid('btn'),
+			'id'       => str_replace(['[]', '[', ']'], ['', '-', ''], $name),
 			'class'    => 'btn btn-default',
 			'data-selected-class' => 'btn btn-success',
 			'content'  => '<i class="glyphicon glyphicon-paperclip"></i> '.$label.' <span class="badge"></span>',
@@ -478,8 +478,8 @@ class Bootstrap extends Html
 
 
 		$html = Html::fileInput($name, $value, $inputAttr);
-		$html .= '<button '.static::renderTagAttributes($btnAttr).'>'.$content.'</button>'
-			. '<filearea '.static::renderTagAttributes($fileareaAttr).'></filearea>'
+		$html .= '<div><button '.static::renderTagAttributes($btnAttr).'>'.$content.'</button>'
+			. '<filearea '.static::renderTagAttributes($fileareaAttr).'></filearea></div>'
 			. '<script>
 				$(document).ready(function()
 				{

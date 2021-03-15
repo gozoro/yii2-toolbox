@@ -1,5 +1,27 @@
 
 
+.file-input-hidden{
+	visibility: hidden;
+	position:absolute;
+	top:0;
+	right:0;
+	margin: 0;
+	opacity:0;
+	filter:alpha(opacity=0);
+	width: .1px;
+	height: .1px;
+	z-index: -1;
+
+}
+.file-input-hidden + button{display: block; float: left;}
+.file-input-filearea{
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 50%;
+	padding-left: 5px;
+}
 
 
 .file-uploader > div{padding-top:10px;}
@@ -12,7 +34,7 @@
 .file-uploader .progress{height:5px; margin-bottom:0; position: absolute; width:100%}
 .file-uploader .error{color:red; position: absolute; left: 50%; top: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 50%;}
 
-.file-uploader button{
+/*.file-uploader button{
 	position:relative;
 	overflow:hidden;
 }
@@ -26,7 +48,7 @@
 	filter:alpha(opacity=0);
 	min-width:100%;
 	min-height:100%;
-}
+}*/
 
 
 

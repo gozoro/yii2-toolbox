@@ -484,22 +484,18 @@ class Bootstrap extends Html
 			. '<script>
 				$(document).ready(function()
 				{
-					var $btn   = $("#'.static::encode($buttonId).'");
-					var $list  = $("#'.static::encode($fileareaId).'");
-					var $input = $("#'.static::encode($inputId).'");
-
-					$input.change(function()
+					$("#'.static::encode($inputId).'").change(function()
 					{
-						$btn.change();
+						$("#'.static::encode($buttonId).'").change();
 					});
 
-					$btn.click(function()
+					$("#'.static::encode($buttonId).'").click(function()
 					{
-						$input.click();
+						$("#'.static::encode($inputId).'").click();
 					})
 					.change(function()
 					{
-						var files = $input.get(0).files;
+						var files = $("#'.static::encode($inputId).'").get(0).files;
 						var countFiles = files ? files.length : 1;
 						var fileNames = [], i;
 
@@ -508,16 +504,17 @@ class Bootstrap extends Html
 							fileNames.push( files[i].name );
 						}
 
+						var $btn = $(this);
 						var selectedFiles = fileNames.join(",\n");
 						var selClass = $btn.data("selected-class");
 
 						$btn.attr("class", selClass).attr("title", selectedFiles).find(".badge").html(countFiles);
-						$list.attr("title", selectedFiles).html(selectedFiles);
+						$("#'.static::encode($fileareaId).'").attr("title", selectedFiles).html(selectedFiles);
 					})
 					.parents("form").on("reset", function()
 					{
-						$btn.attr("class", "'.static::encode($class).'").find(".badge").html("");
-						$list.attr("title", "").html("");
+						$(this).attr("class", "'.static::encode($class).'").find(".badge").html("");
+						$("#'.static::encode($fileareaId).'").attr("title", "").html("");
 					});
 				});
 			</script>';

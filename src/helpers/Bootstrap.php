@@ -513,7 +513,7 @@ class Bootstrap extends Html
 					})
 					.parents("form").on("reset", function()
 					{
-						$(this).attr("class", "'.static::encode($class).'").find(".badge").html("");
+						$("#'.static::encode($buttonId).'").attr("class", "'.static::encode($class).'").find(".badge").html("");
 						$("#'.static::encode($fileareaId).'").attr("title", "").html("");
 					});
 				});

@@ -8,6 +8,7 @@ use gozoro\toolbox\helpers\Html;
 use gozoro\toolbox\assets\DatepickerAsset;
 use gozoro\toolbox\assets\ButtonUploadAsset;
 use gozoro\toolbox\assets\AutocompleterAsset;
+use gozoro\toolbox\assets\FileUploaderAsset;
 use yii\helpers\ArrayHelper;
 
 /**

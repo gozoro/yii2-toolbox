@@ -50,7 +50,6 @@
 .file-uploader-filelist .name > a{
 	color:red;
 	cursor: pointer;
-	display:none;
 }
 
 .file-uploader-filelist .name > a:hover{

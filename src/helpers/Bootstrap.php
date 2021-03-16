@@ -521,4 +521,266 @@ class Bootstrap extends Html
 
 		return $html;
 	}
+
+
+
+	/**
+	 * Returns HTML with Jquery-File-Upload button.
+	 *
+	 * See: https://github.com/blueimp/jQuery-File-Upload/
+	 *
+	 * Default options:
+	 *
+	 * - 'id' => $name,                // Important! "file[]" replace to "file", "file[video]" replace to "file-video"
+	 * - 'class' => 'btn btn-default',
+	 * - 'content' => 'Upload',
+	 * - 'multiple' => false,
+	 * - 'accept' => '',
+	 * - filelist => [
+	 *      'class' => 'file-uploader-filelist'
+	 *   ]
+	 * - 'data-unique-name' => 1,      // send unique file names
+	 * - 'data-max-upload-files' => 0, // limit upload files, 0 - no limit
+	 * - pluginOptions => [
+	 *      'url' => $url,
+	 *      'type' => 'POST',
+	 *      'maxChunkSize' => 5 * 1024 * 1024, // 5 MB
+	 *      'dataType' => 'json',
+	 *      'sequentialUploads' => true,
+	 *      'paramName' => $name,
+	 *   ] // more options see https://github.com/blueimp/jQuery-File-Upload/wiki/Options
+	 *
+	 *
+	 * @param string $name param name
+	 * @param string|array $url url for upload
+	 * @param array $options
+	 * @return string
+	 */
+	static function fileUploader($name, $url, $options = [])
+	{
+		JqueryToolsAsset::register( Yii::$app->view );
+		JqueryFileUploadAsset::register( Yii::$app->view );
+		FileUploaderAsset::register( Yii::$app->view );
+
+		if(is_array($url))
+			$url = Url::to($url);
+
+		if(!empty($options['id']))
+			$id = $options['id'];
+		else
+			$id = str_replace(['[]', '[', ']'], ['', '-', ''], $name);
+
+		if(!empty($options['filelist']['id']))
+			$filelistId = $options['filelist']['id'];
+		else
+			$filelistId = uniqid('filelist');
+
+
+		$label = (Yii::$app->language == 'ru-RU') ? 'Загрузить' : 'Upload';
+
+		$defaultOptions = [
+			'id' => $id,
+			'content'             => '<i class="glyphicon glyphicon-paperclip"></i> '.$label,
+			'class'               => 'btn btn-default',
+			'data-selected-class' => 'btn btn-default',
+			'filearea' => [
+				'style'=>'display:none;'
+				],
+
+			'data-unique-name' => 1,
+			'data-max-upload-files' => 0,
+
+			'filelist' => [
+				'id' => $filelistId,
+				'class' => 'file-uploader-filelist'
+				],
+
+			'input' => [
+				'id'=> uniqid('uploader')
+				],
+
+			'pluginOptions' => [
+				'url' => $url,
+				'type' => 'POST',
+				'maxChunkSize' => 5 * 1024 * 1024, // 5 MB
+				'dataType' => 'json',
+				'sequentialUploads' => true,
+				'paramName' => $name,
+
+				'add' => 'function(e, data)
+				{
+					var $list = $("#'.static::encode($filelistId).'");
+					var $btn = $("#'.static::encode($id).'");
+
+					$btn.attr("title", "");
+
+					var maxFiles = $btn.data("max-upload-files");
+
+					if(maxFiles)
+					{
+						globalFileCount++;
+
+						if(globalFileCount > maxFiles)
+						{
+							return false;
+						}
+					}
+
+
+					var file = data.files[0];
+					file.id = "file" + $.generateRandomString(32);
+
+					var matches = file.name.match(/\.([^.]+)$/), ext = "";
+					if (matches)
+					{
+						ext = matches[1];
+					}
+					file.uniqueName = file.id + "." + ext;
+
+					var htmlFile = `<div id="${file.id}" class="file">
+						<div class="name" title="${file.name}"><a href="#" class="click-remove-upload-file"><i class="glyphicon glyphicon-trash"></i></a> ${file.name}</div>
+						<div class="size">${ $.filesizeFormat(file.size)}</div>
+						<div class="percent">0%</div>
+						<div class="error"></div>
+						<div class="progress"></div>
+						</div>`;
+
+					$list.append(htmlFile);
+
+					if(maxFiles)
+					{
+						if( $list.children().length >= maxFiles )
+						{
+							$btn.attr("disabled", true).attr("data-max-limit-lock", 1);
+						}
+					}
+
+
+					$(`#${file.id} .click-remove-upload-file`).click(function(event)
+					{
+						event.preventDefault();
+						$(`#${file.id}`).remove();
+
+						var $list = $("#'.static::encode($filelistId).'");
+
+						if(globalXHRFILES[file.id])
+						{
+							globalXHRFILES[file.id].abort();
+						}
+
+						$btn = $("#'.static::encode($id).'");
+						var maxFiles = $btn.data("max-upload-files");
+
+						if(maxFiles)
+						{
+							globalFileCount--;
+							var isLock = $btn.data("max-limit-lock");
+
+							if(isLock)
+							{
+								$btn.attr("disabled", false).attr("data-max-limit-lock", 0);
+							}
+						}
+					});
+
+					globalXHRFILES[file.id] = data.submit();
+				}',
+				'submit' => 'function(e, data)
+				{
+					var isUniqueName = $("#'.static::encode($id).'").data("unique-name");
+					var file = data.files[0];
+
+					if(isUniqueName)
+						data.files[0].uploadName = file.uniqueName;
+
+				}',
+				'progress' => 'function(e, data)
+				{
+					var progress = parseInt((data.loaded / data.total) * 100, 10);
+					var file = data.files[0];
+
+					$(`#${file.id} .percent`).html(`${progress}%`);
+					$(`#${file.id} .progress`).html(`<div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100" style="width: ${progress}%;"></div>`);
+				}',
+				'done' => 'function(e, data)
+				{
+					var file = data.files[0];
+					var isUniqueName = $("#'.static::encode($id).'").data("unique-name");
+					var res = data.result.'.static::encode($name).'[0];
+
+					if(res.error)
+					{
+						$(`#${file.id} .error`).html(res.error);
+						$(`#${file.id} .progress`).hide();
+						$(`#${file.id} .percent`).html("");
+						$(`#${file.id} .size`).html("");
+					}
+					else
+					{
+						$(`#${file.id}`).addClass("text-success");
+						$(`#${file.id} .size`).html(`<i class="glyphicon glyphicon-ok"></i>`);
+						$(`#${file.id} .progress`).remove();
+
+						if(isUniqueName)
+							$(`#${file.id}`).append(`<input type="hidden" name="file[${file.uniqueName}]" value="${file.name}">`);
+						else
+							$(`#${file.id}`).append(`<input type="hidden" name="file[]" value="${file.name}">`);
+					}
+				}',
+				'fail' => 'function(e, data)
+				{
+
+				}',
+			],
+		];
+
+		$options = ArrayHelper::merge($defaultOptions, $options);
+
+		$inputId         = $options['input']['id'];
+		$filelistOptions = $options['filelist']; unset($options['filelist']);
+		$pluginOptions   = $options['pluginOptions']; unset($options['pluginOptions']);
+
+
+		$html = '<filelist '.static::renderTagAttributes($filelistOptions).'></filelist>';
+
+		$html.= static::fileInput('', null, $options);
+
+		$html.= '<script>
+
+			$(document).ready(function()
+			{
+				var globalFileCount = 0;
+				var globalXHRFILES = {};
+
+				$("#'.static::encode($inputId).'").fileupload('.Json::optionsEncode($pluginOptions).');
+
+				$("#'.static::encode($id).'").parents("form").on("reset", function()
+				{
+					$("#'.static::encode($filelistId).'").html("");
+
+					for(var i in globalXHRFILES)
+					{
+						globalXHRFILES[i].abort();
+					}
+
+					var $btn = $("#'.static::encode($id).'");
+					var maxFiles = $btn.data("max-upload-files");
+
+					if(maxFiles)
+					{
+						globalFileCount = 0;
+						var isLock = $btn.data("max-limit-lock");
+
+						if(isLock)
+						{
+							$btn.attr("disabled", false).attr("data-max-limit-lock", 0);
+						}
+					}
+				});
+			});
+
+			</script>';
+
+		return $html;
+	}
 }

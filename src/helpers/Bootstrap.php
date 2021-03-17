@@ -434,6 +434,8 @@ class Bootstrap extends Html
 	 * - 'class' => 'btn btn-default',
 	 * - 'data-selected-class' => 'btn btn-success',
 	 * - 'content' => 'Attach a file',
+	 * - 'text' => 'Attach a file',
+	 *
 	 * - 'multiple' => false,
 	 * - 'accept' => ''
 	 * - input => [class=>'file-input-hidden', id=uniqid()] // hidden input file tag
@@ -445,13 +447,14 @@ class Bootstrap extends Html
 	{
 		FileUploaderAsset::register( Yii::$app->view );
 
-		$label = (Yii::$app->language == 'ru-RU') ? 'Прикрепить' : 'Attach a file';
+		//$label = (Yii::$app->language == 'ru-RU') ? 'Прикрепить' : 'Attach a file';
 
 		$defaultOptions = [
 			'id'       => str_replace(['[]', '[', ']'], ['', '-', ''], $name),
+			'label'    => (Yii::$app->language == 'ru-RU') ? 'Прикрепить' : 'Attach a file',
 			'class'    => 'btn btn-default',
 			'data-selected-class' => 'btn btn-success',
-			'content'  => '<i class="glyphicon glyphicon-paperclip"></i> '.$label.' <span class="badge"></span>',
+			'content'  => '<i class="glyphicon glyphicon-paperclip"></i> %LABEL% <span class="badge"></span>',
 			'type' => 'button',
 
 			'input'    => ['id'=> uniqid('input'), 'class'=>'file-input-hidden'],
@@ -461,18 +464,18 @@ class Bootstrap extends Html
 
 		$options = ArrayHelper::merge($defaultOptions, $options);
 
-		$inputId    = $options['input']['id'];
-		$buttonId   = $options['id'];
-		$fileareaId = $options['filearea']['id'];
-		$content    = $options['content'];
-		$class      = $options['class'];
-
+		$inputId      = $options['input']['id'];
+		$buttonId     = $options['id'];
+		$fileareaId   = $options['filearea']['id'];
+		$class        = $options['class'];
+		$label        = $options['label'];
+		$content      = str_replace('%LABEL%', $label, $options['content']);
 		$inputAttr    = $options['input'];
 		$fileareaAttr = $options['filearea'];
 
 		if(isset($options['multiple']) and !isset($inputAttr['multiple'])) $inputAttr['multiple'] = $options['multiple'];
 		if(isset($options['accept']) and !isset($inputAttr['accept']))   $inputAttr['accept'] = $options['accept'];
-		unset($options['input'], $options['filearea'], $options['content'], $options['multiple'], $options['accept']);
+		unset($options['input'], $options['filearea'], $options['content'], $options['label'], $options['multiple'], $options['accept']);
 
 		$btnAttr = $options;
 

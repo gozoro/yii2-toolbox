@@ -9,6 +9,7 @@ use gozoro\toolbox\assets\DatepickerAsset;
 use gozoro\toolbox\assets\ButtonUploadAsset;
 use gozoro\toolbox\assets\AutocompleterAsset;
 use gozoro\toolbox\assets\FileUploaderAsset;
+use gozoro\toolbox\assets\FileInputAsset;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -434,8 +435,7 @@ class Bootstrap extends Html
 	 * - 'class' => 'btn btn-default',
 	 * - 'data-selected-class' => 'btn btn-success',
 	 * - 'content' => 'Attach a file',
-	 * - 'text' => 'Attach a file',
-	 *
+	 * - 'label' => 'Attach a file',
 	 * - 'multiple' => false,
 	 * - 'accept' => ''
 	 * - input => [class=>'file-input-hidden', id=uniqid()] // hidden input file tag
@@ -445,9 +445,7 @@ class Bootstrap extends Html
 	 */
 	static function fileInput($name, $value = null, $options = [])
 	{
-		FileUploaderAsset::register( Yii::$app->view );
-
-		//$label = (Yii::$app->language == 'ru-RU') ? 'Прикрепить' : 'Attach a file';
+		FileInputAsset::register( Yii::$app->view );
 
 		$defaultOptions = [
 			'id'       => str_replace(['[]', '[', ']'], ['', '-', ''], $name),
@@ -561,8 +559,6 @@ class Bootstrap extends Html
 	 */
 	static function fileUploader($name, $url, $options = [])
 	{
-		JqueryToolsAsset::register( Yii::$app->view );
-		JqueryFileUploadAsset::register( Yii::$app->view );
 		FileUploaderAsset::register( Yii::$app->view );
 
 		if(is_array($url))

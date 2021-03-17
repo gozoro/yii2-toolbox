@@ -6,9 +6,9 @@ namespace gozoro\toolbox\assets;
 use yii\web\AssetBundle;
 
 /**
- * Bootstrap 3 file uploader asset
+ * Bootstrap 3 file input asset
  */
-class FileUploaderAsset extends AssetBundle
+class FileInputAsset extends AssetBundle
 {
 
 	public $sourcePath = '@vendor/gozoro/yii2-toolbox/src/resources/file.uploader';
@@ -25,8 +25,6 @@ class FileUploaderAsset extends AssetBundle
 
     public $depends = [
 		'yii\web\JqueryAsset',
-		'gozoro\toolbox\assets\JqueryFileUploadAsset',
-		'gozoro\toolbox\assets\JqueryToolsAsset',
     ];
 
 

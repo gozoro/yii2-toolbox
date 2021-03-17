@@ -37,7 +37,7 @@ class Bootstrap extends Html
 				. '<span class="glyphicon glyphicon-paperclip"></span> '
 				. self::encode($label)
 				.' <span class="badge"></span>'
-				. self::fileInput($name, null, $options)
+				. Html::fileInput($name, null, $options)
 				. '</label>';
 
 		return $html;

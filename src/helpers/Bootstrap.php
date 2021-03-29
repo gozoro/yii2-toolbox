@@ -480,7 +480,7 @@ class Bootstrap extends Html
 
 		if(isset($inputAttr['accept']) and is_array( $inputAttr['accept'] ))
 		{
-			$inputAttr['accept'] = implode(',', array_map(function($item){return ".".trim(trim($item), '.');}, $input));
+			$inputAttr['accept'] = implode(',', array_map(function($item){return ".".trim(trim($item), '.');}, $inputAttr['accept'] ));
 		}
 
 		$html = '<div>'

@@ -18,7 +18,7 @@ class AjaxFormAsset extends AssetBundle
     ];
 
     public $js = [
-		'js/jquery.ajaxform.min.js',
+		'js/jquery.ajaxform.js',
     ];
 
 	public $jsOptions = ['position'=>\yii\web\view::POS_HEAD];

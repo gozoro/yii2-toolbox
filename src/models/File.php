@@ -127,10 +127,12 @@ abstract class File extends \yii\db\ActiveRecord
 	/**
 	 * Moves the uploaded file to file storage and inserts a record in the database.
 	 * @param \yii\web\UploadedFile $uploadedFile
+	 * @param bool $deleteTempFile whether to delete the temporary file after saving.
+     * If true, you will not be able to save the uploaded file again in the current request.
 	 * @return \static
 	 * @throws \yii\base\Exception
 	 */
-	static public function saveFile(\yii\web\UploadedFile $uploadedFile)
+	static public function saveFile(\yii\web\UploadedFile $uploadedFile, $deleteTempFile = true)
 	{
 		$file = new static();
 		$file->name = $uploadedFile->name;
@@ -150,7 +152,7 @@ abstract class File extends \yii\db\ActiveRecord
 				{
 					if($file->save())
 					{
-						if($uploadedFile->saveAs($file->getPath()))
+						if($uploadedFile->saveAs($file->getPath(), $deleteTempFile))
 						{
 							$file->afterFilestore();
 							return $file;

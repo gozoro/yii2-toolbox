@@ -747,7 +747,7 @@ class Bootstrap extends Html
 
 		$html = '<filelist '.static::renderTagAttributes($filelistOptions).'></filelist>';
 
-		$html.= static::fileInput($name, null, $options);
+		$html.= static::fileInput('', null, $options);
 
 		$html.= '<script>
 

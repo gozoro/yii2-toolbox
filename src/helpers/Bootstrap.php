@@ -726,9 +726,9 @@ class Bootstrap extends Html
 						$(`#${file.id} .progress`).remove();
 
 						if(isUniqueName)
-							$(`#${file.id}`).append(`<input type="hidden" name="file[${file.uniqueName}]" value="${file.name}">`);
+							$(`#${file.id}`).append(`<input type="hidden" name="'.static::encode($name).'[${file.uniqueName}]" value="${file.name}">`);
 						else
-							$(`#${file.id}`).append(`<input type="hidden" name="file[]" value="${file.name}">`);
+							$(`#${file.id}`).append(`<input type="hidden" name="'.static::encode($name).'[]" value="${file.name}">`);
 					}
 				}',
 				'fail' => 'function(e, data)
@@ -747,7 +747,7 @@ class Bootstrap extends Html
 
 		$html = '<filelist '.static::renderTagAttributes($filelistOptions).'></filelist>';
 
-		$html.= static::fileInput('', null, $options);
+		$html.= static::fileInput($name, null, $options);
 
 		$html.= '<script>
 

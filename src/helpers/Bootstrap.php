@@ -726,9 +726,9 @@ class Bootstrap extends Html
 						$(`#${file.id} .progress`).remove();
 
 						if(isUniqueName)
-							$(`#${file.id}`).append(`<input type="hidden" name="'.static::encode($name).'[${file.uniqueName}]" value="${file.name}">`);
+							$(`#${file.id}`).append(`<input type="hidden" name="'.static::encode($name).'[${file.uniqueName}]" value="${file.name}" data-element="#'.static::encode($id).'">`);
 						else
-							$(`#${file.id}`).append(`<input type="hidden" name="'.static::encode($name).'[]" value="${file.name}">`);
+							$(`#${file.id}`).append(`<input type="hidden" name="'.static::encode($name).'[]" value="${file.name}" data-element="#'.static::encode($id).'">`);
 					}
 				}',
 				'fail' => 'function(e, data)

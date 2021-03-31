@@ -115,16 +115,6 @@ abstract class File extends \yii\db\ActiveRecord
 	}
 
 	/**
-	 * @see moveToFilestore()
-	 * @param \yii\web\UploadedFile $uploadedFile
-	 * @deprecated since version v0.0.6
-	 */
-	static public function toFilestore(\yii\web\UploadedFile $uploadedFile)
-	{
-		return self::saveFile($uploadedFile);
-	}
-
-	/**
 	 * Moves the uploaded file to file storage and inserts a record in the database.
 	 * @param \yii\web\UploadedFile $uploadedFile
 	 * @param bool $deleteTempFile whether to delete the temporary file after saving.

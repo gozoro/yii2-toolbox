@@ -109,6 +109,7 @@ class UploadHandler extends \UploadHandler
 					unset( $file_path_explode[ count($file_path_explode)-1 ] );
 					$ready_file_path = implode('.', $file_path_explode);
 					rename($file_path, $ready_file_path);
+					$file_path = $ready_file_path;
 				}
 
 

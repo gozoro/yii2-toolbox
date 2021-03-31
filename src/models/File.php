@@ -3,6 +3,7 @@ namespace gozoro\toolbox\models;
 
 use Yii;
 use yii\helpers\Url;
+use yii\helpers\FileHelper;
 
 
 /**
@@ -116,38 +117,34 @@ abstract class File extends \yii\db\ActiveRecord
 
 	/**
 	 *
-	 * @param \yii\web\UploadedFile $uploadedFile
-	 * @param type $deleteTempFile
-	 * @deprecated since 31.03.2021
+	 * @param string $filename path to file
+	 * @param string $realName real base name
+	 * @param bool $deleteTempFile whether to delete the temporary file after saving.
+     * If true, you will not be able to save the uploaded file again in the current request.
 	 * @see method saveUploadedFile($uploadedFile, $deleteTempFile)
 	 * @return \static
 	 */
-	static public function saveFile(\yii\web\UploadedFile $uploadedFile, $deleteTempFile = true)
+	static public function saveFile($filename, $realName = null, $deleteTempFile = true)
 	{
-		return static::saveUploadedFile($uploadedFile, $deleteTempFile);
-	}
+		if(!file_exists($filename))
+		{
+			throw new \yii\base\Exception("File not exists.");
+		}
 
-	/**
-	 * Moves the uploaded file to file storage and inserts a record in the database.
-	 * @param \yii\web\UploadedFile $uploadedFile
-	 * @param bool $deleteTempFile whether to delete the temporary file after saving.
-     * If true, you will not be able to save the uploaded file again in the current request.
-	 * @return \static
-	 * @throws \yii\base\Exception
-	 */
-	static public function saveUploadedFile(\yii\web\UploadedFile $uploadedFile, $deleteTempFile = true)
-	{
+		if(is_null($realName))
+			$realName = basename($filename);
+
 		$file = new static();
-		$file->name = $uploadedFile->name;
+		$file->name = $realName;
 		$file->hash = Yii::$app->security->generateRandomString(32);
-		$file->size = $uploadedFile->size;
-		$file->mime = $uploadedFile->type;
+		$file->size = filesize($filename);
+		$file->mime = FileHelper::getMimeTypeByExtension($filename);
 		$file->uploadDate = date('Y-m-d H:i:s');
 
 		$filestore = $file->getFilestore();
 
 
-		if($file->beforeFilestore())
+		if($file->beforeSaveToFilestore())
 		{
 			if(file_exists($filestore))
 			{
@@ -155,9 +152,19 @@ abstract class File extends \yii\db\ActiveRecord
 				{
 					if($file->save())
 					{
-						if($uploadedFile->saveAs($file->getPath(), $deleteTempFile))
+						if($deleteTempFile)
 						{
-							$file->afterFilestore();
+							$result = rename($filename, $file->getPath());
+						}
+						else
+						{
+							$result = copy($filename, $file->getPath());
+						}
+
+
+						if($result)
+						{
+							$file->afterSaveToFilestore();
 							return $file;
 						}
 						else
@@ -183,8 +190,67 @@ abstract class File extends \yii\db\ActiveRecord
 		}
 	}
 
+	/**
+	 * Moves the uploaded file to file storage and inserts a record in the database.
+	 * @param \yii\web\UploadedFile $uploadedFile
+	 * @param bool $deleteTempFile whether to delete the temporary file after saving.
+     * If true, you will not be able to save the uploaded file again in the current request.
+	 * @return \static
+	 * @throws \yii\base\Exception
+	 */
+	static public function saveUploadedFile(\yii\web\UploadedFile $uploadedFile, $deleteTempFile = true)
+	{
+		$file = new static();
+		$file->name = $uploadedFile->name;
+		$file->hash = Yii::$app->security->generateRandomString(32);
+		$file->size = $uploadedFile->size;
+		$file->mime = $uploadedFile->type;
+		$file->uploadDate = date('Y-m-d H:i:s');
 
-	public function beforeFilestore()
+		$filestore = $file->getFilestore();
+
+
+		if($file->beforeSaveToFilestore())
+		{
+			if(file_exists($filestore))
+			{
+				if(is_writable($filestore))
+				{
+					if($file->save())
+					{
+						if($uploadedFile->saveAs($file->getPath(), $deleteTempFile))
+						{
+							$file->afterSaveToFilestore();
+							return $file;
+						}
+						else
+						{
+							$file->delete();
+							throw new \yii\base\Exception("Uploaded file could not be saved.");
+						}
+					}
+					else
+					{
+						throw new \yii\base\Exception("Failed to save file record to database.");
+					}
+				}
+				else
+				{
+					throw new \yii\base\Exception("Directory $filestore is not writable.");
+				}
+			}
+			else
+			{
+				throw new \yii\base\Exception("Directory $filestore is not exists.");
+			}
+		}
+	}
+
+	/**
+	 * The method is executed before saving to filestore
+	 * @return boolean
+	 */
+	public function beforeSaveToFilestore()
 	{
 		$filestore = $this->getFilestore();
 
@@ -195,8 +261,10 @@ abstract class File extends \yii\db\ActiveRecord
 		return true;
 	}
 
-
-	public function afterFilestore()
+	/**
+	 * The method is executed after saving to filestore
+	 */
+	public function afterSaveToFilestore()
 	{
 
 	}
@@ -206,7 +274,11 @@ abstract class File extends \yii\db\ActiveRecord
 	public function afterDelete()
 	{
 		parent::afterDelete();
-		unlink($this->getPath());
+
+		if(file_exists( $this->getPath() ))
+		{
+			unlink($this->getPath());
+		}
 	}
 
 }

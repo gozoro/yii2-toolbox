@@ -115,6 +115,19 @@ abstract class File extends \yii\db\ActiveRecord
 	}
 
 	/**
+	 *
+	 * @param \yii\web\UploadedFile $uploadedFile
+	 * @param type $deleteTempFile
+	 * @deprecated since 31.03.2021
+	 * @see method saveUploadedFile($uploadedFile, $deleteTempFile)
+	 * @return \static
+	 */
+	static public function saveFile(\yii\web\UploadedFile $uploadedFile, $deleteTempFile = true)
+	{
+		return static::saveUploadedFile($uploadedFile, $deleteTempFile);
+	}
+
+	/**
 	 * Moves the uploaded file to file storage and inserts a record in the database.
 	 * @param \yii\web\UploadedFile $uploadedFile
 	 * @param bool $deleteTempFile whether to delete the temporary file after saving.
@@ -122,7 +135,7 @@ abstract class File extends \yii\db\ActiveRecord
 	 * @return \static
 	 * @throws \yii\base\Exception
 	 */
-	static public function saveFile(\yii\web\UploadedFile $uploadedFile, $deleteTempFile = true)
+	static public function saveUploadedFile(\yii\web\UploadedFile $uploadedFile, $deleteTempFile = true)
 	{
 		$file = new static();
 		$file->name = $uploadedFile->name;

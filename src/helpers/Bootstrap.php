@@ -584,7 +584,7 @@ class Bootstrap extends Html
 
 		$defaultOptions = [
 			'id' => $id,
-			'content'             => '<i class="glyphicon glyphicon-paperclip"></i> '.$label,
+			'content'             => '<i class="glyphicon glyphicon-paperclip"></i> %LABEL%',
 			'class'               => 'btn btn-default',
 			'data-selected-class' => 'btn btn-default',
 			'filearea' => [

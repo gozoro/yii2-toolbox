@@ -485,7 +485,7 @@ class Bootstrap extends Html
 
 		if(empty($inputAttr['data-element']))
 		{
-			$inputAttr['data-element'] = $buttonId;
+			$inputAttr['data-element'] = '#'.$buttonId;
 		}
 
 		$html = '<div>'

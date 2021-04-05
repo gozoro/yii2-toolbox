@@ -483,6 +483,11 @@ class Bootstrap extends Html
 			$inputAttr['accept'] = implode(',', array_map(function($item){return ".".trim(trim($item), '.');}, $inputAttr['accept'] ));
 		}
 
+		if(empty($inputAttr['data-element']))
+		{
+			$inputAttr['data-element'] = $buttonId;
+		}
+
 		$html = '<div>'
 			. Html::fileInput($name, $value, $inputAttr)
 			. '<button '.static::renderTagAttributes($btnAttr).'>'.$content.'</button>'

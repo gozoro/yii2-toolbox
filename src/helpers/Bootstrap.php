@@ -18,34 +18,6 @@ use yii\helpers\ArrayHelper;
 class Bootstrap extends Html
 {
 	/**
-	 * Generates a file input field.
-	 * To use a file input field, you should set the enclosing form's "enctype" attribute to
-     * be "multipart/form-data". After the form is submitted, the uploaded file information
-     * can be obtained via $_FILES[$name] (see PHP documentation).
-	 *
-	 * @param string $name the name attribute.
-	 * @param string $label button label. Default "Upload".
-	 * @param array $options the tag options in terms of name-value pairs. These will be rendered as
-     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-	 * @return string the generated file input tag
-	 * @deprecated since 2021.03.10
-	 */
-	static function buttonUpload($name, $label = "Upload", $options = [])
-	{
-		ButtonUploadAsset::register( Yii::$app->view );
-
-		$html = '<label class="btn btn-default btn-upload">'
-				. '<span class="glyphicon glyphicon-paperclip"></span> '
-				. self::encode($label)
-				.' <span class="badge"></span>'
-				. Html::fileInput($name, null, $options)
-				. '</label>';
-
-		return $html;
-	}
-
-
-	/**
 	 * Returns HTML with datepicker-input.<br />
 	 *
 	 * See demo: https://uxsolutions.github.io/bootstrap-datepicker<br />

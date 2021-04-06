@@ -246,28 +246,24 @@ class Bootstrap extends Html
 	/**
 	 * Returns HTML with autocomplte input.
 	 *
-	 * Default options:
 	 *
-	 * - maxResults  => 0,   // maximum number of suggestions (0 - no limits).
-	 * - minChars    => 1,   // minimum number of characters for the suggestions.
-	 * - timeout     => 500, // keyboard input timeout.
-	 * - matchRegexp => 'function(value, escape){return RegExp(escape(value), 'i')}', // function returns a regexp-object used for filtering.
-	 * - matchValue  => 'function(item, index){return item;}',                        // function returns a value used for filtering.
-	 * - itemDisplay => 'function(item, index){return item;}',                        // function returns a value used for display a suggestions.
-	 * - itemValue   => null,                                                         // you can set a function returns a value for the request
-	 *                                                                                // (the default value is matchValue).
-	 * - emptyValue  => ''                                                            // empty value when itemValue is used.
-	 * - ajaxData    => 'function(value){return {value:value};}',                     // function returns default ajax-request data
-	 * - hiddenValue => '',                                                           // default value for the hidden input
-	 *
-	 * - 'maxlength'   => false,
-	 * - 'readonly'    => false,
-	 * - 'pickonly'    => false,
-	 * - 'disabled'    => false,
-	 * - 'class'       => false,
-	 * - 'style'       => false,
-	 * - 'placeholder' => false,
-	 * - 'autocomplete' => 'off',
+	 *	Default options:
+	 *  - 'autocomplete' => 'off',
+	 *  - 'class' => 'form-control',
+	 *  - 'id' => $name,                                                                  // Important! "city[]" replace to "city", "Form[city]" replace to "form-city",
+	 *  - 'pluginOptions' => [                                                            // Options for jquery.autocompleter.js
+	 *       maxResults  => 0,                                                            // Maximum number of suggestions (0 - no limits).
+	 *       minChars    => 1,                                                            // Minimum number of characters for the suggestions.
+	 *       timeout     => 500,                                                          // Keyboard input timeout.
+	 *       matchRegexp => 'function(value, escape){return RegExp(escape(value), 'i')}', // Function returns a regexp-object used for filtering.
+	 *       matchValue  => 'function(item, index){return item;}',                        // Function returns a value used for filtering.
+	 *       itemDisplay => 'function(item, index){return item;}',                        // Function returns a value used for display a suggestions.
+	 *       itemValue   => null,                                                         // You can set a function returns a value for the request
+	 *                                                                                    // (the default value is matchValue).
+	 *       emptyValue  => ''                                                            // Empty value when itemValue is used.
+	 *       ajaxData    => 'function(value){return {value:value};}',                     // Function returns default ajax-request data.
+	 *       hiddenValue => '',                                                           // Default value for the hidden input.
+	 * ]
 	 *
 	 *
 	 * @param string $name element name and element id  (if "Form[name]" then id="Form-name").
@@ -280,107 +276,51 @@ class Bootstrap extends Html
 	{
 		AutocompleterAsset::register( Yii::$app->view );
 
-		$defaultOptions = [
-				'maxlength'   => false,
-				'readonly'    => false,
-				'disabled'    => false,
-				'class'       => false,
-				'style'       => false,
-				'placeholder' => false,
-				'autocomplete'=> 'off'
-		];
-
-
-		if(!is_null($options) and is_array($options))
-		{
-			$defaultOptions = array_merge($defaultOptions, $options);
-		}
-
-
-		if(isset($defaultOptions['maxlength']) and $defaultOptions['maxlength'])
-			$maxlength = 'maxlength="'.(int)$defaultOptions['maxlength'].'"';
-		else
-			$maxlength = '';
-
-
-		if(isset($defaultOptions['disabled']) and $defaultOptions['disabled'])
-			$disabled = 'disabled';
-		else
-			$disabled = '';
-
-		if(isset($defaultOptions['readonly']) and $defaultOptions['readonly'])
-			$readonly = 'readonly';
-		else
-			$readonly = '';
-
-
-
-
-		if(isset($defaultOptions['placeholder']) and $defaultOptions['placeholder'])
-			$placeholder = 'placeholder="'.self::encode($defaultOptions['placeholder']).'"';
-		else
-			$placeholder = '';
-
-		if(empty($defaultOptions['autocomplete']))
-		{
-			$autocomplete = '';
-		}
-		else
-		{
-			if(is_string( $defaultOptions['autocomplete'] ))
-				$autocomplete = 'autocomplete="'.self::encode($defaultOptions['autocomplete']).'"';
-			elseif($defaultOptions['autocomplete'])
-				$autocomplete = 'autocomplete="on"';
-			else
-				$autocomplete = 'autocomplete="off"';
-		}
-
-		if(isset($defaultOptions['class']) and $defaultOptions['class'])
-			$class = $defaultOptions['class'];
-		else
-			$class = '';
-
-		if(isset($defaultOptions['style']) and $defaultOptions['style'])
-			$style = 'style="'.$defaultOptions['style'].'"';
-		else
-			$style = '';
-
-
-		unset($defaultOptions['maxlength'], $defaultOptions['readonly'], $defaultOptions['disabled'],
-			  $defaultOptions['placeholder'], $defaultOptions['class'], $defaultOptions['style'], $defaultOptions['autocomplete']);
-
-
-
-		$jsOptions = self::phpOptions2jsOptions($defaultOptions);
-
-
-
-
 		if(is_string($name))
 		{
 			$id = str_replace('[', '-', $name);
 			$id = str_replace(']', '', $id);
-
-			if(is_array($variants))
-			{
-				$jsVariants = json_encode($variants);
-			}
-			elseif(is_string($variants))
-			{
-				$jsVariants = '"'.$variants.'"'; // ajax url
-			}
 		}
 		else
 		{
 			throw new \yii\base\Exception("Invalid name autocompleter.");
 		}
 
+		if(is_array($variants))
+		{
+			$jsVariants = json_encode($variants);
+		}
+		elseif(is_string($variants))
+		{
+			$jsVariants = '"'.$variants.'"'; // ajax url
+		}
 
 
 
-		return
-		'<input id="'.$id.'" name="'.$name.'" type="text" class="form-control autocompleter '.$class.'" '.$style.' value="'.self::encode($value).'" '.$maxlength.' '.$placeholder.' '.$readonly.' '.$disabled.' '.$autocomplete.' />
-		<script>
+		$defaultOptions = [
+			'id' => $id,
+			'autocomplete'=> 'off',
+			'class' => 'form-control',
+		];
+
+
+		$options = ArrayHelper::merge($defaultOptions, $options);
+
+		if(isset($options['pluginOptions']))
+		{
+			$pluginOptions = $options['pluginOptions'];
+		}
+		else
+		{
+			$pluginOptions = [];
+		}
+
+		unset( $options['pluginOptions'] );
+
+		$jsOptions = Json::optionsEncode($pluginOptions);
+
+		return static::input('text', $name, $value, $options)
+		.'<script>
 			$(document).ready(function()
 			{
 				$("#'.$id.'").autocompleter('.$jsVariants.', '.$jsOptions.' );
@@ -567,6 +507,8 @@ class Bootstrap extends Html
 			'filearea' => [
 				'style'=>'display:none;'
 				],
+
+			'label' => $label,
 
 			'data-unique-name' => 1,
 			'data-max-upload-files' => 0,

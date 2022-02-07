@@ -23,16 +23,25 @@ use yii\rbac\Rule;
   * Example RBAC config:<br />
  *
  * [
+ *
+ *    // Permission list
  *    'permissions' =>[
  *        'read' => 'permissions for read something',   // name => description
  *        'write' => 'permissions for write something', // name => description
  *    ],
  *
+ *    // Role list
  *    'roles' => [
  *        'role_admin' => 'Administrator role', // name => description
  *        'role_manager' => 'Manager role',     // name => description
  *    ],
  *
+ *	   // Rule list
+ *	  'rules' => [
+ *			\WriteRule:class => ['write'], // rule for permission "write"
+ *	   ],
+ *
+ *    // Mapping roles to permissions
  *    'access' => [
  *        'role_admin' => ['read', 'write'], // array of permissions
  *        'role_manager' => ['read'],

@@ -21,9 +21,8 @@ use yii\rbac\Rule;
  * RBAC configuration and managment tool in the console.
  *
   * Example RBAC config:
- *
+ *	```
  * [
- *
  *    // Permission list
  *    'permissions' =>[
  *        'read' => 'permissions for read something',   // name => description
@@ -47,7 +46,7 @@ use yii\rbac\Rule;
  *        'role_manager' => ['read'],
  *    ],
  * ]
- *
+ * ```
  */
 abstract class RbacController extends Controller
 {

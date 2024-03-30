@@ -60,17 +60,17 @@ class HiddenFilestore
 	}
 
 	/**
-	 * Returns structure of files from folder with $path.<br />
+	 * Returns structure of files from folder with $path.
 	 *
-	 * Example of strucure:<br />
-	 * [<br />
-	 *	hash1 => '/files/file1.txt',<br />
-	 *	hash2 => '/files/file2.txt',<br />
-	 *	'folder1' => [<br />
-	 *	hash1 => '/files/folder1/file3.txt',<br />
-	 *	hash2 => '/files/folder1/file4.txt',<br />
-	 *	]<br />
-	 * ]<br />
+	 * Example of strucure:
+	 * [
+	 *	hash1 => '/files/file1.txt',
+	 *	hash2 => '/files/file2.txt',
+	 *	'folder1' => [
+	 *	hash1 => '/files/folder1/file3.txt',
+	 *	hash2 => '/files/folder1/file4.txt',
+	 *	]
+	 * ]
 	 *
 	 *
 	 * @return array
@@ -113,12 +113,11 @@ class HiddenFilestore
 	 * Returns array of hash and files.
 	 *
 	 * [
-	 *	hash1 => '/files/file1.txt',<br />
-	 *	hash2 => '/files/file2.txt',<br />
-	 *	hash1 => '/files/folder1/file3.txt',<br />
-	 *	hash2 => '/files/folder1/file4.txt',<br />
+	 *	hash1 => '/files/file1.txt',
+	 *	hash2 => '/files/file2.txt',
+	 *	hash1 => '/files/folder1/file3.txt',
+	 *	hash2 => '/files/folder1/file4.txt',
 	 * ]
-	 *
 	 *
 	 * @param array $fileStructure
 	 * @return array

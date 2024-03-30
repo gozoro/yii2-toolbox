@@ -3,9 +3,7 @@
 
 namespace gozoro\toolbox\helpers;
 
-use Yii;
-use gozoro\toolbox\assets\DatepickerAsset;
-use gozoro\toolbox\assets\ButtonUploadAsset;
+
 
 /**
  * HTML helpers
@@ -89,11 +87,13 @@ class Html extends \yii\helpers\Html
 	/**
 	 * Returns string with video tag or youtube-iframe.
 	 * @param string $path path to video file or youtube-url
-	 * @param array $options ['id', 'title', 'poster', 'width'].<br />
-	 * id - the unique identifier of the tag<br />
-	 * title - text over video <br />
-	 * poster - poster image path<br />
-	 * width - width (default 400px)<br />
+	 * @param array $options ['id', 'title', 'poster', 'width'].
+	 *
+	 * - id - the unique identifier of the tag
+	 * - title - text over video
+	 * - poster - poster image path
+	 * - width - width (default 400px)
+	 *
 	 * @return string
 	 */
 	static public function video($path, $options=[])

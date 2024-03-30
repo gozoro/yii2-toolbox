@@ -20,7 +20,7 @@ use yii\rbac\Rule;
  *
  * RBAC configuration and managment tool in the console.
  *
-  * Example RBAC config:<br />
+  * Example RBAC config:
  *
  * [
  *

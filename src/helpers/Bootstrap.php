@@ -6,7 +6,6 @@ namespace gozoro\toolbox\helpers;
 use Yii;
 use gozoro\toolbox\helpers\Html;
 use gozoro\toolbox\assets\DatepickerAsset;
-use gozoro\toolbox\assets\ButtonUploadAsset;
 use gozoro\toolbox\assets\AutocompleterAsset;
 use gozoro\toolbox\assets\FileUploaderAsset;
 use gozoro\toolbox\assets\FileInputAsset;
@@ -18,10 +17,11 @@ use yii\helpers\ArrayHelper;
 class Bootstrap extends Html
 {
 	/**
-	 * Returns HTML with datepicker-input.<br />
+	 * Returns HTML with datepicker-input.
 	 *
-	 * See demo: https://uxsolutions.github.io/bootstrap-datepicker<br />
-	 * See manual: https://bootstrap-datepicker.readthedocs.io/en/latest/options.html<br />
+	 * See demo: https://uxsolutions.github.io/bootstrap-datepicker
+	 *
+	 * See manual: https://bootstrap-datepicker.readthedocs.io/en/latest/options.html
 	 *
 	 * Defalut options:
 	 *
@@ -140,7 +140,7 @@ class Bootstrap extends Html
 		unset($defaultOptions['maxlength'], $defaultOptions['readonly'], $defaultOptions['pickonly'], $defaultOptions['disabled'],
 			$defaultOptions['placeholder'], $defaultOptions['class'], $defaultOptions['style'], $defaultOptions['autocomplete']);
 
-		$jsOptions = self::phpOptions2jsOptions($defaultOptions);
+		$jsOptions = Json::optionsEncode($defaultOptions);
 
 		if(is_string($name))
 		{
@@ -204,41 +204,6 @@ class Bootstrap extends Html
 		}
 
 		return $html;
-	}
-
-
-	/**
-	 * Returns string with options for insert to javascript code.
-	 *
-	 * @param array $options php options
-	 * @return string
-	 */
-	private static function phpOptions2jsOptions($options)
-	{
-		$jsOptions = [];
-		foreach($options as $key => $val)
-		{
-			if(is_bool($val))
-			{
-				if($val)
-					$jsOptions[$key] = $key.':true';
-				else
-					$jsOptions[$key] = $key.':false';
-			}
-			elseif(is_int($val) or (is_string($val) and preg_match('/^function/i', $val)))
-			{
-				$jsOptions[$key] = $key.':'.$val;
-			}
-			elseif(is_array($val))
-			{
-				$jsOptions[$key] = $key.':'.json_encode($val);
-			}
-			else // string
-			{
-				$jsOptions[$key] = $key.':"'.$val.'"';
-			}
-		}
-		return '{'.implode(',', $jsOptions ).'}';
 	}
 
 
@@ -350,8 +315,8 @@ class Bootstrap extends Html
 	 * - 'label' => 'Attach a file',
 	 * - 'multiple' => false,
 	 * - 'accept' => ''
-	 * - input => [class=>'file-input-hidden', id=uniqid()] // hidden input file tag
-	 * - filearea => [class=>'file-input-filearea', id=uniqid()] // tag with file names
+	 * - input => [class=>'file-input-hidden', id=uniqid(input')] // hidden input file tag
+	 * - filearea => [class=>'file-input-filearea', id=uniqid('filearea')] // tag with file names
 	 *
 	 * @return string the generated file input tag
 	 */

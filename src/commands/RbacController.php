@@ -53,6 +53,16 @@ abstract class RbacController extends Controller
 	public $defaultAction = 'show';
 
 
+	/**
+	 * The method must return an instance of a class with the interface \yii\web\Identity by user ID.
+	 */
+	abstract function findIdentityById($userId);
+
+	/**
+	 * The method must return an instance of a class with the interface \yii\web\Identity by username.
+	 */
+	abstract function findIdentityByUsername($username);
+
 
 	/**
 	 * Returns rbac manager

@@ -1,7 +1,7 @@
 # yii2-toolbox
 Collection classes and helpers for yii2 project.
 
-
+THIS PACKAGE IS DEPRECATED.
 
 
 Usage models/File

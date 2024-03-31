@@ -17,6 +17,7 @@
 		"bower-asset/jquery": "~1.12",
 		"blueimp/jquery-file-upload": "~10.31.0",
 		"bower-asset/bootstrap-datepicker": "^1.7",
+		"gozoro/yii2-rbac-console": "~1.0.0",
 		"gozoro/jquery-ajaxform": "~1.0.0",
 		"gozoro/jquery-autocompleter": "~1.0.0",
 		"gozoro/bootstrap-sidebar": "~1.0.0",

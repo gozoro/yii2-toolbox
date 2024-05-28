@@ -11,6 +11,8 @@ use gozoro\toolbox\assets\FileUploaderAsset;
 use gozoro\toolbox\assets\FileInputAsset;
 use yii\helpers\ArrayHelper;
 
+use gozoro\yii2\widgets\Autocompleter;
+
 /**
  * Bootstrap 3 HTML helpers
  */
@@ -215,19 +217,27 @@ class Bootstrap extends Html
 	 *	Default options:
 	 *  - 'autocomplete' => 'off',
 	 *  - 'class' => 'form-control',
-	 *  - 'id' => $name,                                                                  // Important! "city[]" replace to "city", "Form[city]" replace to "form-city",
-	 *  - 'pluginOptions' => [                                                            // Options for jquery.autocompleter.js
-	 *       maxResults  => 0,                                                            // Maximum number of suggestions (0 - no limits).
-	 *       minChars    => 1,                                                            // Minimum number of characters for the suggestions.
-	 *       timeout     => 500,                                                          // Keyboard input timeout.
-	 *       matchRegexp => 'function(value, escape){return RegExp(escape(value), 'i')}', // Function returns a regexp-object used for filtering.
-	 *       matchValue  => 'function(item, index){return item;}',                        // Function returns a value used for filtering.
-	 *       itemDisplay => 'function(item, index){return item;}',                        // Function returns a value used for display a suggestions.
-	 *       itemValue   => null,                                                         // You can set a function returns a value for the request
-	 *                                                                                    // (the default value is matchValue).
-	 *       emptyValue  => ''                                                            // Empty value when itemValue is used.
-	 *       ajaxData    => 'function(value){return {value:value};}',                     // Function returns default ajax-request data.
-	 *       hiddenValue => '',                                                           // Default value for the hidden input.
+	 *  - 'id' => $name,                                                                // Important! "city[]" replace to "city", "Form[city]" replace to "form-city",
+	 *  - 'clientOptions' => [                                                          // Options for jquery.autocompleter.js
+	 *       maxResults  => 0,                                                          // Maximum number of suggestions (0 - no limits).
+	 *       minChars    => 1,                                                          // Minimum number of characters for the suggestions.
+	 *       delay     => 500,                                                          // Keyboard input delay.
+	 *       ajaxData  => 'function(value){return {value:value};}',                     // Function returns default ajax-request data.
+	 *
+	 *       template  => 'function(item, index){return item;}',                        // The function must return the item value used to compare with the input value when filtering.
+	 *                                                                                  // The result of the function determines the match of the input string.
+	 *       value     => 'function(item, index){return item;}',                        // The function must return value for the request (when item is selected).
+	 *                                                                                  // This option enables the use of hidden input.
+	 *                                                                                  // You can use this option when you want to use an identifier instead of a text string from input.
+	 *
+	 *       row  => 'function(item, index){return item;}',                             // The function must return a value used for display a suggestions.
+	 *                                                                                  // You can change the format of the output suggestion string.
+	 *
+	 *       filter => 'function(item, index, searchValue, template){ return true; }',  // Function must return a boolean value.
+	 *                                                                                  // When a variant must be included in the list of suggestions this function
+	 *                                                                                  // must return `true` instead of `false`.
+	 *
+	 *       hiddenDefaultValue => '',                                                  // Default value for the hidden input.
 	 * ]
 	 *
 	 *
@@ -239,58 +249,14 @@ class Bootstrap extends Html
 	 */
 	static function autocompleter($name, $value="", $variants=[], $options=null)
 	{
-		AutocompleterAsset::register( Yii::$app->view );
+		if(!\is_array($options))
+			$options = [];
 
-		if(is_string($name))
-		{
-			$id = str_replace('[', '-', $name);
-			$id = str_replace(']', '', $id);
-		}
-		else
-		{
-			throw new \yii\base\Exception("Invalid name autocompleter.");
-		}
+		$options['name']     = $name;
+		$options['value']    = $value;
+		$options['variants'] = $variants;
 
-		if(is_array($variants))
-		{
-			$jsVariants = json_encode($variants);
-		}
-		elseif(is_string($variants))
-		{
-			$jsVariants = '"'.$variants.'"'; // ajax url
-		}
-
-
-
-		$defaultOptions = [
-			'id' => $id,
-			'autocomplete'=> 'off',
-			'class' => 'form-control',
-		];
-
-
-		$options = ArrayHelper::merge($defaultOptions, $options);
-
-		if(isset($options['pluginOptions']))
-		{
-			$pluginOptions = $options['pluginOptions'];
-		}
-		else
-		{
-			$pluginOptions = [];
-		}
-
-		unset( $options['pluginOptions'] );
-
-		$jsOptions = Json::optionsEncode($pluginOptions);
-
-		return static::input('text', $name, $value, $options)
-		.'<script>
-			$(document).ready(function()
-			{
-				$("#'.$id.'").autocompleter('.$jsVariants.', '.$jsOptions.' );
-			});
-		</script>';
+		return Autocompleter::widget($options);
 	}
 
 

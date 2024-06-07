@@ -243,18 +243,18 @@ class Bootstrap extends Html
 	 *
 	 * @param string $name element name and element id  (if "Form[name]" then id="Form-name").
 	 * @param string $value current text input value.
-	 * @param array|string $variants array of items or url to AJAX GET-request and JSON response.
+	 * @param array|string $items array of items or url to AJAX GET-request and JSON response.
 	 * @param array $options options.
 	 * @return string the generated autocompleter input tag.
 	 */
-	static function autocompleter($name, $value="", $variants=[], $options=null)
+	static function autocompleter($name, $value="", $items=[], $options=null)
 	{
 		if(!\is_array($options))
 			$options = [];
 
 		$options['name']     = $name;
 		$options['value']    = $value;
-		$options['variants'] = $variants;
+		$options['items'] = $items;
 
 		return Autocompleter::widget($options);
 	}
